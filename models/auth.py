@@ -148,22 +148,22 @@ frame.pack(pady=20, padx=40, fill="both", expand=True)
 
 label_nom = ctk.CTkLabel(frame, text=texts[current_language]["label_nom"])
 label_nom.pack(pady=5)
-entry_nom = ctk.CTkEntry(frame)
+entry_nom = ctk.CTkEntry(frame, width=250)
 entry_nom.pack(pady=5)
 
 label_prenom = ctk.CTkLabel(frame, text=texts[current_language]["label_prenom"])
 label_prenom.pack(pady=5)
-entry_prenom = ctk.CTkEntry(frame)
+entry_prenom = ctk.CTkEntry(frame, width=250)
 entry_prenom.pack(pady=5)
 
 label_email = ctk.CTkLabel(frame, text=texts[current_language]["label_email"]) 
 label_email.pack(pady=5)
-entry_email = ctk.CTkEntry(frame)
+entry_email = ctk.CTkEntry(frame, width=250)
 entry_email.pack(pady=5)
 
 label_password = ctk.CTkLabel(frame, text=texts[current_language]["label_mot_de_passe"])
 label_password.pack(pady=5)
-entry_password = ctk.CTkEntry(frame, show="*")
+entry_password = ctk.CTkEntry(frame, show="*", width=250)
 entry_password.pack(pady=5)
 
 button_register = ctk.CTkButton(frame, text=texts[current_language]["button_inscrire"], command=inscrire_utilisateur)
@@ -171,6 +171,5 @@ button_register.pack(pady=20)
 
 button_login = ctk.CTkButton(frame, text=texts[current_language]["button_connecter"], command=connexion)
 button_login.pack(pady=20)
-
 
 window.mainloop()
