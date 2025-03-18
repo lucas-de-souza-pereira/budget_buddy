@@ -1,4 +1,6 @@
-
+import mysql.connector
+import pwinput
+from dotenv import load_dotenv
 import customtkinter as ctk
 
 class User(ctk.CTkFrame):
@@ -20,10 +22,8 @@ class User(ctk.CTkFrame):
     def sign_in(self):
         pass
 
-    
-        
-        passw = pwinput.pwinput("mot de passe : ")
     def connect_db():
+        passw = pwinput.pwinput("mot de passe : ")
         return mysql.connector.connect(
             host="localhost",
             user="root",

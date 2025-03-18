@@ -1,12 +1,71 @@
 import customtkinter as ctk
 import bcrypt
-from database import connect_db
+from connect_db import Connect_db
+from tkinter import PhotoImage
 
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("blue")
 
+current_language = "fr" 
+
+def toggle_theme():
+    current_mode = ctk.get_appearance_mode()
+    new_mode = "Dark" if current_mode == "Light" else "Light" 
+    window.after(50, lambda: ctk.set_appearance_mode(new_mode))
+
+def toggle_language():
+    global current_language
+    
+    current_language = "fr" if current_language == "en" else "en"
+    
+    update_texts()
+    
+    if current_language == "fr":
+        flag_image = PhotoImage(file="Assets/flag_france.png")
+        button_language.configure(image=flag_image)
+        button_language.image = flag_image
+    else:
+        flag_image = PhotoImage(file="Assets/uk_flag.png")
+        button_language.configure(image=flag_image)
+        button_language.image = flag_image
+
+def update_texts():
+    label_title.configure(text=texts[current_language]["label_title"])
+    label_nom.configure(text=texts[current_language]["label_nom"])
+    label_prenom.configure(text=texts[current_language]["label_prenom"])
+    label_email.configure(text=texts[current_language]["label_email"])
+    label_password.configure(text=texts[current_language]["label_mot_de_passe"])
+    button_register.configure(text=texts[current_language]["button_inscrire"])
+    button_login.configure(text=texts[current_language]["button_connecter"])
+    button_theme.configure(text=texts[current_language]["button_theme"])
+
+texts = {
+    "fr": {
+        "label_title": "Bienvenue sur Budget Buddy",
+        "label_nom": "Nom:",
+        "label_prenom": "Prénom:",
+        "label_email": "Email:",
+        "label_mot_de_passe": "Mot de passe:",
+        "button_inscrire": "S'inscrire",
+        "button_connecter": "Se connecter",
+        "button_theme": "Changer de Thème",
+        "button_language": "Passer en Anglais"
+    },
+    "en": {
+        "label_title": "Welcome to Budget Buddy",
+        "label_nom": "Last Name:",
+        "label_prenom": "First Name:",
+        "label_email": "Email:",
+        "label_mot_de_passe": "Password:",
+        "button_inscrire": "Register",
+        "button_connecter": "Login",
+        "button_theme": "Change Theme",
+        "button_language": "Switch to French"
+    }
+}
+
 def utilisateur_existe(email):
-    conn = connect_db()
+    conn = Connect_db()
     cursor = conn.cursor()
     cursor.execute("SELECT id FROM users WHERE email = %s", (email,))
     user = cursor.fetchone()
@@ -21,12 +80,12 @@ def inscrire_utilisateur():
     mot_de_passe = entry_password.get()
 
     if utilisateur_existe(email):
-        print("Cet utilisateur existe déjà !")
+        print("L'utilisateur existe déjà")
         return
     
     hashed_password = bcrypt.hashpw(mot_de_passe.encode('utf-8'), bcrypt.gensalt())
 
-    conn = connect_db()
+    conn = Connect_db()
     cursor = conn.cursor()
 
     try:
@@ -35,7 +94,7 @@ def inscrire_utilisateur():
             (nom, prenom, email, hashed_password.decode('utf-8'))
         )
         conn.commit()
-        print("Inscription réussie !")
+        print("Utilisateur inscrit avec succès.")
     except Exception as e:
         print(f"Erreur : {e}")
     finally:
@@ -43,19 +102,17 @@ def inscrire_utilisateur():
         conn.close()
 
 def verifier_connexion(email, mot_de_passe):
-    conn = connect_db()
+    conn = Connect_db()
     cursor = conn.cursor()
 
     try:
         cursor.execute("SELECT password FROM users WHERE email = %s", (email,))
         user = cursor.fetchone() 
         
-        cursor.fetchall()
-        
         if user and bcrypt.checkpw(mot_de_passe.encode('utf-8'), user[0].encode('utf-8')):
             return True
     except Exception as e:
-        print("Erreur", e)
+        print("Erreur lors de la vérification de la connexion:", e)
     finally:
         cursor.close()
         conn.close()
@@ -71,43 +128,49 @@ def connexion():
     else:
         print("Email ou mot de passe incorrect")
 
-app = ctk.CTk()
-app.geometry("400x500")
-app.title("Authentification")
+window = ctk.CTk()
+window.geometry("1080x720")
+window.title("Authentification")
 
-label_title = ctk.CTkLabel(app, text="Bienvenue", font=("Arial", 20))
-label_title.pack(pady=20)
+flag_image_fr = PhotoImage(file="Assets/flag_france.png")
+flag_image_en = PhotoImage(file="Assets/uk_flag.png")
+button_language = ctk.CTkButton(window, image=flag_image_fr, text=texts[current_language]["button_language"], command=toggle_language, corner_radius=10)
+button_language.pack(side="left", anchor="n", padx=10, pady=40)
 
-frame = ctk.CTkFrame(app)
+button_theme = ctk.CTkButton(window, text=texts[current_language]["button_theme"], command=toggle_theme, corner_radius=10)
+button_theme.pack(side="right", anchor="n", padx=10, pady=40)
+
+label_title = ctk.CTkLabel(window, text=texts[current_language]["label_title"], font=("Arial", 20))
+label_title.pack(pady=10)
+
+frame = ctk.CTkFrame(window)
 frame.pack(pady=20, padx=40, fill="both", expand=True)
 
-label_nom = ctk.CTkLabel(frame, text="Nom:")
+label_nom = ctk.CTkLabel(frame, text=texts[current_language]["label_nom"])
 label_nom.pack(pady=5)
 entry_nom = ctk.CTkEntry(frame)
 entry_nom.pack(pady=5)
 
-label_prenom = ctk.CTkLabel(frame, text="Prénom:")
+label_prenom = ctk.CTkLabel(frame, text=texts[current_language]["label_prenom"])
 label_prenom.pack(pady=5)
 entry_prenom = ctk.CTkEntry(frame)
 entry_prenom.pack(pady=5)
 
-label_email = ctk.CTkLabel(frame, text="Email:")
+label_email = ctk.CTkLabel(frame, text=texts[current_language]["label_email"]) 
 label_email.pack(pady=5)
 entry_email = ctk.CTkEntry(frame)
 entry_email.pack(pady=5)
 
-label_password = ctk.CTkLabel(frame, text="Mot de passe:")
+label_password = ctk.CTkLabel(frame, text=texts[current_language]["label_mot_de_passe"])
 label_password.pack(pady=5)
 entry_password = ctk.CTkEntry(frame, show="*")
 entry_password.pack(pady=5)
 
-button_register = ctk.CTkButton(frame, text="S'inscrire", command=inscrire_utilisateur)
-button_register.pack(pady=10)
+button_register = ctk.CTkButton(frame, text=texts[current_language]["button_inscrire"], command=inscrire_utilisateur)
+button_register.pack(pady=20)
 
-button_login = ctk.CTkButton(frame, text="Se connecter", command=connexion)
-button_login.pack(pady=10)
+button_login = ctk.CTkButton(frame, text=texts[current_language]["button_connecter"], command=connexion)
+button_login.pack(pady=20)
 
-label_message = ctk.CTkLabel(frame, text="")
-label_message.pack(pady=10)
 
-app.mainloop()
+window.mainloop()
