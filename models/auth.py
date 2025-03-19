@@ -1,17 +1,15 @@
 import customtkinter as ctk
 import bcrypt
-from database import connect_db
+from connect_db import Connect_db
 
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("blue")
 
 def utilisateur_existe(email):
-    conn = connect_db()
-    cursor = conn.cursor()
-    cursor.execute("SELECT id FROM users WHERE email = %s", (email,))
-    user = cursor.fetchone()
-    cursor.close()
-    conn.close()
+    conn = Connect_db()
+    conn.cursor.execute("SELECT id FROM users WHERE email = %s", (email,))
+    user = conn.cursor.fetchone()
+    conn.close_db()
     return user is not None 
 
 def inscrire_utilisateur():
