@@ -38,6 +38,7 @@ def update_texts():
     button_register.configure(text=texts[current_language]["button_inscrire"])
     button_login.configure(text=texts[current_language]["button_connecter"])
     button_theme.configure(text=texts[current_language]["button_theme"])
+    button_language.configure(text=texts[current_language]["button_language"])
 
 texts = {
     "fr": {
@@ -60,7 +61,7 @@ texts = {
         "button_inscrire": "Register",
         "button_connecter": "Login",
         "button_theme": "Change Theme",
-        "button_language": "Switch to French"
+        "button_language": " Switch to French"
     }
 }
 
