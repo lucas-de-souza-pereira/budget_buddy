@@ -100,17 +100,13 @@ class User(ctk.CTkFrame):
 
     def check_connection(self,email, password):
 
-        self.conn.connect_db()
-        print("connexion ok")
-
         try:
             self.conn.cursor.execute("SELECT password FROM users WHERE email = %s", (email,))
             user = self.conn.cursor.fetchone() 
             
-            self.conn.cursor.fetchall()
-            
             if user and bcrypt.checkpw(password.encode('utf-8'), user[0].encode('utf-8')):
                 return True
+            
         except Exception as e:
             print("Erreur", e)
         finally:
@@ -120,15 +116,30 @@ class User(ctk.CTkFrame):
 
 
     def sign_in(self):
+
+        self.conn.connect_db()
+
         email = self.entry_email.get()
         password = self.entry_password.get()
 
-        if self.check_connection(email, password):
-            print("Connexion réussie !")
-            messagebox.showinfo("Succès", "Connexion réussie !")
-            self.show_main_menu()
-        else:
-            print("Email ou mot de passe incorrect")
+        try : 
+            self.conn.cursor.execute("SELECT id FROM users WHERE email = %s",(email,))
+            user = self.conn.cursor.fetchone()
+
+            if self.check_connection(email, password):
+                print("Connexion réussie !")
+                messagebox.showinfo("Succès", "Connexion réussie !")
+                
+                user_id = user[0]
+                self.show_main_menu(user_id)
+            else:
+                messagebox.showinfo("Erreur", "Email ou mot de passe incorrect")
+                print("Email ou mot de passe incorrect")
+
+        except Exception as e:
+            print("Erreur lors de la connexion :", e)
+        finally:
+            self.conn.close_db()
 
 
     def show(self):
