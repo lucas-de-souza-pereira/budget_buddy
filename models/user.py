@@ -89,10 +89,15 @@ class User(ctk.CTkFrame):
 
             self.conn.cursor.execute(querry,values)
             self.conn.mydb.commit()
+        
+            self.conn.cursor.execute("SELECT id FROM users WHERE email = %s",(email,))
+
+            user = self.conn.cursor.fetchone()
+            user_id = user[0]
 
             messagebox.showinfo("Succès", "Connexion réussie !")
             print("Inscription réussie !")
-            self.show_main_menu() 
+            self.show_main_menu(user_id) 
         except Exception as e:
             print(f"Erreur : {e}")
         finally:
