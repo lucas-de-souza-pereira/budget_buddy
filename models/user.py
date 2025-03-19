@@ -25,8 +25,14 @@ class User(ctk.CTkFrame):
         self.label = ctk.CTkLabel(self.container, text=self.get_text("label_title"), font=("Arial", 18))
         self.label.pack(pady=10)
 
-        self.username_entry = ctk.CTkEntry(self.container, placeholder_text=self.get_text("placeholder_username"))
-        self.username_entry.pack(pady=5)
+        self.last_name_entry = ctk.CTkEntry(self.container, placeholder_text=self.get_text("placeholder_last_name"))
+        self.last_name_entry.pack(pady=5)
+
+        self.first_name_entry = ctk.CTkEntry(self.container, placeholder_text=self.get_text("placeholder_first_name"))
+        self.first_name_entry.pack(pady=5)
+
+        self.email_entry = ctk.CTkEntry(self.container, placeholder_text="Email")
+        self.email_entry.pack(pady=5)
 
         self.password_entry = ctk.CTkEntry(self.container, placeholder_text=self.get_text("placeholder_password"), show="*")
         self.password_entry.pack(pady=5)
@@ -40,7 +46,6 @@ class User(ctk.CTkFrame):
         self.theme_button = ctk.CTkButton(self.container, text=self.get_text("button_theme"), command=self.toggle_theme)
         self.theme_button.pack(side = "right", anchor ="n", padx = 10, pady = 40)
 
-        # Bouton pour changer la langue, avec l'image initiale en français
         self.language_button = ctk.CTkButton(self.container, image=self.flag_image_fr, text=self.get_text("button_language"), command=self.toggle_language)
         self.language_button.pack(side = "left", anchor ="n", padx = 10, pady = 40)
 
@@ -50,25 +55,31 @@ class User(ctk.CTkFrame):
         """ Retourne le texte correspondant en fonction de la langue actuelle """
         texts = {
             "fr": {
-                "label_title": "Connexion",
-                "placeholder_username": "Nom d'utilisateur",
+                "label_title": "Connexion / Inscription",
+                "placeholder_last_name": "Nom",
+                "placeholder_first_name": "Prénom",
                 "placeholder_password": "Mot de passe",
                 "button_connecter": "Se connecter",
                 "button_inscrire": "Créer un compte",
                 "button_theme": "Changer de Thème",
                 "button_language": "Passer en Anglais",
+                "error_text": "Erreur",
+                "error_message": "Nom d'utilisateur ou mot de passe incorrect."
             },
             "en": {
-                "label_title": "Login",
-                "placeholder_username": "Username",
+                "label_title": "Login / Register",
+                "placeholder_last_name": "Last Name",
+                "placeholder_first_name": "First Name",
                 "placeholder_password": "Password",
                 "button_connecter": "Log In",
                 "button_inscrire": "Create Account",
                 "button_theme": "Change Theme",
                 "button_language": "Switch to French",
+                "error_text": "Error",
+                "error_message": "Incorrect username or password."
             }
         }
-        return texts[self.current_language].get(key, key)  # Renvoie le texte correspondant ou la clé par défaut
+        return texts[self.current_language].get(key, key)
 
     def toggle_theme(self):
         """ Basculer entre le thème clair et sombre """
@@ -91,7 +102,8 @@ class User(ctk.CTkFrame):
     def update_texts(self):
         """ Met à jour les textes des éléments de l'interface selon la langue actuelle """
         self.label.configure(text=self.get_text("label_title"))
-        self.username_entry.configure(placeholder_text=self.get_text("placeholder_username"))
+        self.last_name_entry.configure(placeholder_text=self.get_text("placeholder_last_name"))
+        self.first_name_entry.configure(placeholder_text=self.get_text("placeholder_first_name"))
         self.password_entry.configure(placeholder_text=self.get_text("placeholder_password"))
         self.login_button.configure(text=self.get_text("button_connecter"))
         self.register_button.configure(text=self.get_text("button_inscrire"))
@@ -114,7 +126,22 @@ class User(ctk.CTkFrame):
 
     def sign_in(self):
         """ Vérifie les identifiants et passe au menu si valide """
-        username = self.username_entry.get()
+        texts = {
+            "fr": {
+                "error_text": "Erreur",
+                "error_message": "Nom d'utilisateur ou mot de passe incorrect.",
+                "success_message": "Connexion réussie !",
+                "empty_fields": "Veuillez remplir tous les champs."
+
+            },
+            "en": {
+                "error_text": "Error",
+                "error_message": "Incorrect username or password.",
+                "success_message": "Login successful !",
+                "empty_fields": "Please fill in all fields."
+            }
+        }
+        username = self.last_name_entry.get()
         password = self.password_entry.get()
 
         conn = sqlite3.connect("users.db")
@@ -123,11 +150,14 @@ class User(ctk.CTkFrame):
         user = cursor.fetchone()
         conn.close()
 
-        if user:
-            messagebox.showinfo("Succès", "Connexion réussie !")
+        if not username or not password:
+            messagebox.showerror(texts[self.current_language]["error_text"], texts[self.current_language]["empty_fields"])
+
+        elif user:
+            messagebox.showinfo(texts[self.current_language]["success_message"])
             self.show_main_menu()
         else:
-            messagebox.showerror("Erreur", "Nom d'utilisateur ou mot de passe incorrect.")
+            messagebox.showerror(texts[self.current_language]["error_text"], texts[self.current_language]["error_message"])
 
     def show(self):
         """ Afficher l'écran de connexion """
