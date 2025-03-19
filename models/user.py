@@ -1,7 +1,12 @@
 import customtkinter as ctk
 from tkinter import PhotoImage
+import bcrypt
 import sqlite3
+
+from models.connect_db import Connect_db
 from tkinter import messagebox
+
+
 
 class User(ctk.CTkFrame):
     def __init__(self, master, show_main_menu):
@@ -10,7 +15,7 @@ class User(ctk.CTkFrame):
 
         self.current_language = "fr"
         self.current_mode = ctk.get_appearance_mode()
-
+        self.conn = Connect_db()
         self.flag_image_fr = PhotoImage(file="Assets/flag_france.png")
         self.flag_image_en = PhotoImage(file="Assets/uk_flag.png")
 
@@ -22,8 +27,8 @@ class User(ctk.CTkFrame):
         self.container = ctk.CTkFrame(self)
         self.container.grid(row=0, column=0)
 
-        self.label = ctk.CTkLabel(self.container, text=self.get_text("label_title"), font=("Arial", 18))
-        self.label.pack(pady=10)
+        self.label_title = ctk.CTkLabel(self.container, text=self.get_text("label_title"), font=("Arial", 18))
+        self.label_title.pack(padx=200,pady=10)
 
         self.last_name_entry = ctk.CTkEntry(self.container, placeholder_text=self.get_text("placeholder_last_name"))
         self.last_name_entry.pack(pady=5)
@@ -49,7 +54,74 @@ class User(ctk.CTkFrame):
         self.language_button = ctk.CTkButton(self.container, image=self.flag_image_fr, text=self.get_text("button_language"), command=self.toggle_language)
         self.language_button.pack(side = "left", anchor ="n", padx = 10, pady = 40)
 
-        self.setup_database()
+        self.label_message = ctk.CTkLabel(self.container, text="")
+        self.label_message.pack(pady=10)
+
+
+    def user_exists(self,email):
+
+        self.conn.cursor.execute("SELECT id FROM users WHERE email = %s", (email,))
+        user = self.conn.cursor.fetchone()
+
+        return user is not None 
+    
+    def create_user(self):
+
+        self.conn.connect_db()
+        print("connexion ok")
+
+        nom = self.last_name_entry.get()
+        prenom = self.first_name_entry.get()
+        email = self.email_entry.get()
+        password = self.password_entry.get()
+
+        print(f"{nom} {prenom} {email} {password}")
+
+        if self.user_exists(email):
+            print("Cet utilisateur existe déjà !")
+            messagebox.showinfo("Erreur", "L'utilisateur existe déjà")
+            return
+        
+        hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
+
+        print(f"{nom} {prenom} {email} {hashed_password}")
+
+        try:
+            querry = "INSERT INTO users (last_name, first_name, email, password) VALUES (%s, %s, %s, %s)"
+            values = (nom, prenom, email, hashed_password.decode('utf-8'))
+
+            self.conn.cursor.execute(querry,values)
+            self.conn.mydb.commit()
+        
+            self.conn.cursor.execute("SELECT id FROM users WHERE email = %s",(email,))
+
+            user = self.conn.cursor.fetchone()
+            user_id = user[0]
+
+            messagebox.showinfo("Succès", "Connexion réussie !")
+            print("Inscription réussie !")
+            self.show_main_menu(user_id) 
+        except Exception as e:
+            print(f"Erreur : {e}")
+        finally:
+            self.conn.close_db()
+
+    def check_connection(self,email, password):
+        """ Vérifie les identifiants et passe au menu si valide """
+
+        try:
+            self.conn.cursor.execute("SELECT password FROM users WHERE email = %s", (email,))
+            user = self.conn.cursor.fetchone() 
+            
+            if user and bcrypt.checkpw(password.encode('utf-8'), user[0].encode('utf-8')):
+                return True
+            
+        except Exception as e:
+            print("Erreur", e)
+        finally:
+            self.conn.close_db()
+
+        return False
 
     def get_text(self, key):
         """ Retourne le texte correspondant en fonction de la langue actuelle """
@@ -101,7 +173,7 @@ class User(ctk.CTkFrame):
 
     def update_texts(self):
         """ Met à jour les textes des éléments de l'interface selon la langue actuelle """
-        self.label.configure(text=self.get_text("label_title"))
+        self.label_title.configure(text=self.get_text("label_title"))
         self.last_name_entry.configure(placeholder_text=self.get_text("placeholder_last_name"))
         self.first_name_entry.configure(placeholder_text=self.get_text("placeholder_first_name"))
         self.password_entry.configure(placeholder_text=self.get_text("placeholder_password"))
@@ -110,22 +182,12 @@ class User(ctk.CTkFrame):
         self.theme_button.configure(text=self.get_text("button_theme"))
         self.language_button.configure(text=self.get_text("button_language"))
 
-    def setup_database(self):
-        """ Création de la base de données SQLite """
-        conn = sqlite3.connect("users.db")
-        cursor = conn.cursor()
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS users (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                username TEXT UNIQUE NOT NULL,
-                password TEXT NOT NULL
-            )
-        """)
-        conn.commit()
-        conn.close()
-
     def sign_in(self):
-        """ Vérifie les identifiants et passe au menu si valide """
+
+        self.conn.connect_db()
+
+        email = self.email_entry.get()
+        password = self.password_entry.get()
         texts = {
             "fr": {
                 "error_text": "Erreur",
@@ -141,23 +203,34 @@ class User(ctk.CTkFrame):
                 "empty_fields": "Please fill in all fields."
             }
         }
-        username = self.last_name_entry.get()
-        password = self.password_entry.get()
 
-        conn = sqlite3.connect("users.db")
-        cursor = conn.cursor()
-        cursor.execute("SELECT * FROM users WHERE username=? AND password=?", (username, password))
-        user = cursor.fetchone()
-        conn.close()
+        try : 
+            self.conn.cursor.execute("SELECT id FROM users WHERE email = %s",(email,))
+            user = self.conn.cursor.fetchone()
 
-        if not username or not password:
-            messagebox.showerror(texts[self.current_language]["error_text"], texts[self.current_language]["empty_fields"])
+            if self.check_connection(email, password):
+                print("Connexion réussie !")
+                messagebox.showinfo("Succès", "Connexion réussie !")
+                
+                user_id = user[0]
+                self.show_main_menu(user_id)
+            else:
+                messagebox.showinfo("Erreur", "Email ou mot de passe incorrect")
+                print("Email ou mot de passe incorrect")
 
-        elif user:
-            messagebox.showinfo(texts[self.current_language]["success_message"])
-            self.show_main_menu()
-        else:
-            messagebox.showerror(texts[self.current_language]["error_text"], texts[self.current_language]["error_message"])
+        except Exception as e:
+            print("Erreur lors de la connexion :", e)
+        finally:
+            self.conn.close_db()
+
+        # if not email or not password:
+        #     messagebox.showerror(texts[self.current_language]["error_text"], texts[self.current_language]["empty_fields"])
+
+        # elif user:
+        #     messagebox.showinfo(texts[self.current_language]["success_message"])
+        #     self.show_main_menu()
+        # else:
+        #     messagebox.showerror(texts[self.current_language]["error_text"], texts[self.current_language]["error_message"])
 
     def show(self):
         """ Afficher l'écran de connexion """
