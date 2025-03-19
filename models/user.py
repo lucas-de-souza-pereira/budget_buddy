@@ -45,7 +45,7 @@ class User(ctk.CTkFrame):
         self.login_button = ctk.CTkButton(self.container, text=self.get_text("button_connecter"), command=self.sign_in)
         self.login_button.pack(pady=10)
 
-        self.register_button = ctk.CTkButton(self.container, text=self.get_text("button_inscrire"), command=self.register)
+        self.register_button = ctk.CTkButton(self.container, text=self.get_text("button_inscrire"), command=self.create_user)
         self.register_button.pack(pady=5)
 
         self.theme_button = ctk.CTkButton(self.container, text=self.get_text("button_theme"), command=self.toggle_theme)
