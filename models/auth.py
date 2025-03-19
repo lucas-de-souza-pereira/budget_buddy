@@ -11,7 +11,7 @@ current_language = "fr"
 def toggle_theme():
     current_mode = ctk.get_appearance_mode()
     new_mode = "Dark" if current_mode == "Light" else "Light" 
-    window.after(50, lambda: ctk.set_appearance_mode(new_mode))
+    window.after(100, lambda: ctk.set_appearance_mode(new_mode))
 
 def toggle_language():
     global current_language
@@ -39,7 +39,6 @@ def update_texts():
     button_login.configure(text=texts[current_language]["button_connecter"])
     button_theme.configure(text=texts[current_language]["button_theme"])
     button_language.configure(text=texts[current_language]["button_language"])
-    check_button.configure(text=texts[current_language]["check_button"])
 
 texts = {
     "fr": {
@@ -52,7 +51,6 @@ texts = {
         "button_connecter": "Se connecter",
         "button_theme": "Changer de Thème",
         "button_language": "Passer en Anglais",
-        "check_button" : "Se souvenir de moi"
     },
     "en": {
         "label_title": "Welcome to Budget Buddy",
@@ -64,7 +62,6 @@ texts = {
         "button_connecter": "Login",
         "button_theme": "Change Theme",
         "button_language": " Switch to French",
-        "check_button": "Remember me"
     }
 }
 
@@ -169,9 +166,6 @@ label_password = ctk.CTkLabel(frame, text=texts[current_language]["label_mot_de_
 label_password.pack(pady=5)
 entry_password = ctk.CTkEntry(frame, show="*", width=250)
 entry_password.pack(pady=5)
-
-check_button = ctk.CTkCheckBox(frame, text=texts[current_language]["check_button"])
-check_button.pack(pady=5)
 
 button_register = ctk.CTkButton(frame, text=texts[current_language]["button_inscrire"], command=inscrire_utilisateur)
 button_register.pack(pady=20)
