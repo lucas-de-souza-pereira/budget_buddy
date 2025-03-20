@@ -1,6 +1,6 @@
 from models.connect_db import Connect_db
 from models.historical import Historical
-from models.transaction import Transaction
+
 from models.mainmenu import Main_menu
 from models.user import User
 
@@ -34,9 +34,8 @@ class App(ctk.CTk):
 
         frame.show()
 
-    def show_main_menu(self,user_id):
+    def show_main_menu(self):
         """ Passe au menu principal après connexion """
-        self.main_menu_frame.load_user_data(user_id)
         self.show_frame(self.main_menu_frame)
 
 
