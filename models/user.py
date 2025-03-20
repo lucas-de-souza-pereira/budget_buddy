@@ -35,11 +35,17 @@ class User(ctk.CTkFrame):
         self.password_entry_create = ctk.CTkEntry(self.create_account_frame, placeholder_text="Mot de passe", show="*")
         self.password_entry_create.pack(pady=10)
 
+        # Checkbox pour afficher/masquer le mot de passe
+        self.show_password_create = ctk.CTkCheckBox(self.create_account_frame, text="Afficher le mot de passe", command=self.toggle_password_create)
+        self.show_password_create.pack(pady=10)
+
         self.register_button = ctk.CTkButton(self.create_account_frame, text="Créer mon compte", command=self.create_user)
         self.register_button.pack(pady=10)
-        # Frame pour la connection
+
+        # Frame pour la connexion
         self.account_connection_frame = ctk.CTkFrame(self)
         self.account_connection_frame.grid(row=0, column=1, padx=20, pady=20, sticky="nsew")
+
         # Champs à remplir pour se connecter
         self.connection_tittle = ctk.CTkLabel(self.account_connection_frame, text="Connexion", font=("Arial", 18))
         self.connection_tittle.pack(pady=30)
@@ -47,14 +53,32 @@ class User(ctk.CTkFrame):
         self.email_entry_conn = ctk.CTkEntry(self.account_connection_frame, placeholder_text="Email")
         self.email_entry_conn.pack(pady=10)
 
-        self.password_entry_conn = ctk.CTkEntry(self.account_connection_frame, placeholder_text="Mot de passe", show="*")  # 
+        self.password_entry_conn = ctk.CTkEntry(self.account_connection_frame, placeholder_text="Mot de passe", show="*")  
         self.password_entry_conn.pack(pady=10)
+
+        # Checkbox pour afficher/masquer le mot de passe
+        self.show_password_conn = ctk.CTkCheckBox(self.account_connection_frame, text="Afficher le mot de passe", command=self.toggle_password_conn)
+        self.show_password_conn.pack(pady=10)
 
         self.login_button = ctk.CTkButton(self.account_connection_frame, text="Se connecter", command=self.sign_in)
         self.login_button.pack(pady=10)
 
         self.theme_button = ctk.CTkButton(self, text="Changer de thème", command=self.toggle_theme)
         self.theme_button.grid(row=1, column=0, padx=10, pady=5, columnspan=3)
+
+    def toggle_password_create(self):
+        """ Affiche ou masque le mot de passe lors de la création du compte """
+        if self.show_password_create.get():
+            self.password_entry_create.configure(show="")
+        else:
+            self.password_entry_create.configure(show="*")
+
+    def toggle_password_conn(self):
+        """ Affiche ou masque le mot de passe lors de la connexion """
+        if self.show_password_conn.get():
+            self.password_entry_conn.configure(show="")
+        else:
+            self.password_entry_conn.configure(show="*")
 
     def user_exists(self, email):
         self.conn.cursor.execute("SELECT id FROM users WHERE email = %s", (email,))
@@ -78,11 +102,9 @@ class User(ctk.CTkFrame):
             messagebox.showinfo("Erreur", "L'utilisateur existe déjà")
             return
 
-
         hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
 
         try:
-
             query = "INSERT INTO users (last_name, first_name, email, password) VALUES (%s, %s, %s, %s)"
             values = (last_name, first_name, email, hashed_password.decode('utf-8'))
 
@@ -107,14 +129,13 @@ class User(ctk.CTkFrame):
         finally:
             self.conn.close_db()
 
-
     def check_connection(self, email, password):
         """ Vérifie les identifiants et passe au menu si valide """
         try:
             self.conn.cursor.execute("SELECT password FROM users WHERE email = %s", (email,))
             user = self.conn.cursor.fetchone() 
             
-            if user and bcrypt.checkpw(password.encode('utf-8'), user[0].encode('utf-8')):
+            if user and bcrypt.checkpw(password.encode('utf-8'), user[0].encode('utf-8')): 
                 return True
         except Exception as e:
             print("Erreur", e)
@@ -132,8 +153,8 @@ class User(ctk.CTkFrame):
     def sign_in(self):
         self.conn.connect_db()
 
-        email = self.email_entry_conn.get()  # Utilisez l'email spécifique à la connexion
-        password = self.password_entry_conn.get()  # Utilisez le mot de passe spécifique à la connexion
+        email = self.email_entry_conn.get()
+        password = self.password_entry_conn.get()
         try: 
             self.conn.cursor.execute("SELECT id FROM users WHERE email = %s", (email,))
             user = self.conn.cursor.fetchone()

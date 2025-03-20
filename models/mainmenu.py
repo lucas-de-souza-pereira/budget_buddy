@@ -59,10 +59,10 @@ class Main_menu(ctk.CTkFrame):
 
         # 🔄 Bouton de Déconnexion en bas
         self.logout_button = ctk.CTkButton(self, text="Déconnexion", command=lambda: self.show_frame(master.login_frame))
-        self.logout_button.grid(row=1, column=0, columnspan=2, pady=20, sticky="e")
+        self.logout_button.grid(row=1, column=0, columnspan=2, padx=20, sticky="e")
 
         self.theme_button = ctk.CTkButton(self, text="Changer de thème", command=self.toggle_theme)
-        self.theme_button.grid(row=1, column=0, padx=10, pady=5, sticky="w" )
+        self.theme_button.grid(row=1, column=0, padx=20, pady=5, sticky="w" )
 
     def toggle_theme(self):
         """ Basculer entre le thème clair et sombre """

@@ -1,11 +1,10 @@
 import customtkinter as ctk
 from datetime import datetime
-from database import connect_db
+from connect_db import Connect_db
 
 class TransactionManage:
     def __init__(self, root):
-        self.conn = connect_db()
-        self.cursor = self.conn.cursor()
+        self.conn = Connect_db()
         self.root = root
         self.setup_ui()
     
@@ -43,7 +42,7 @@ class TransactionManage:
     
     def effectuer_transaction(self):
         print("effect")
-        connect_db()
+        self.conn.connect_db()
         montant = self.montant_var.get()
         description = self.description_var.get()
         type_transaction = self.type_transaction_var.get()
@@ -68,9 +67,9 @@ class TransactionManage:
         
         print("effect3")
         
-        self.cursor.execute(sql, values)
+        self.conn.cursor.execute(sql, values)
         print("effect4")
-        self.conn.commit()
+        self.conn.mydb.commit()
         print("effect5")
         self.status_label.configure(text="Transaction enregistrée !", text_color="green")
         print("effect6")
@@ -79,17 +78,21 @@ class TransactionManage:
     def afficher_transactions(self):
         print("affich")
 
-        self.cursor.execute("SELECT reference, description, montant, date, type FROM transactions ORDER BY date DESC")
+        self.conn.cursor.execute("SELECT reference, description, montant, date, type FROM transactions ORDER BY date DESC")
         transactions = self.cursor.fetchall()
         
         self.transaction_listbox.delete("all")
         for transaction in transactions:
             ref, desc, montant, date, t_type = transaction
             self.transaction_listbox.insert("end", f"{date} | {t_type.upper()} | {desc} : {montant}€\n")
+    
+    def close_db (self):
+        self.cursor.close()
+        self.mydb.close()
 
 if __name__ == "__main__":
     ctk.set_appearance_mode("dark")
-    ctk.set_default_color_theme("blue")
+    ctk.set_default_color_theme("green")
     
     app = ctk.CTk()
     TransactionManage(app)
