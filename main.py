@@ -38,6 +38,7 @@ class App(ctk.CTk):
 
     def show_main_menu(self):
         """ Passe au menu principal après connexion """
+        self.main_menu_frame.select_account()
         self.main_menu_frame.load_user_data()
         self.show_frame(self.main_menu_frame)
 

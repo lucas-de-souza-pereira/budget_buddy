@@ -29,19 +29,18 @@ class User(ctk.CTkFrame):
         self.first_name_entry = ctk.CTkEntry(self.create_account_frame, placeholder_text="Prénom")
         self.first_name_entry.pack(pady=10)
 
-        self.email_entry_create = ctk.CTkEntry(self.create_account_frame, placeholder_text="Email")  # Nouveau champ pour la création de compte
+        self.email_entry_create = ctk.CTkEntry(self.create_account_frame, placeholder_text="Email")
         self.email_entry_create.pack(pady=10)
 
-        self.password_entry_create = ctk.CTkEntry(self.create_account_frame, placeholder_text="Mot de passe", show="*")  # Nouveau champ pour la création de compte
+        self.password_entry_create = ctk.CTkEntry(self.create_account_frame, placeholder_text="Mot de passe", show="*")
         self.password_entry_create.pack(pady=10)
 
         self.register_button = ctk.CTkButton(self.create_account_frame, text="Créer mon compte", command=self.create_user)
         self.register_button.pack(pady=10)
-
-        # Frame pour la connexion
+        # Frame pour la connection
         self.account_connection_frame = ctk.CTkFrame(self)
         self.account_connection_frame.grid(row=0, column=1, padx=20, pady=20, sticky="nsew")
-
+        # Champs à remplir pour se connecter
         self.connection_tittle = ctk.CTkLabel(self.account_connection_frame, text="Connexion", font=("Arial", 18))
         self.connection_tittle.pack(pady=30)
 
