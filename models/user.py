@@ -1,21 +1,19 @@
 import customtkinter as ctk
 from tkinter import PhotoImage
 import bcrypt
-import sqlite3
 
-from models.connect_db import Connect_db
 from tkinter import messagebox
 
 
 
 class User(ctk.CTkFrame):
-    def __init__(self, master, show_main_menu):
+    def __init__(self, master, show_main_menu,conn):
         super().__init__(master)
         self.show_main_menu = show_main_menu  
 
         self.current_language = "fr"
         self.current_mode = ctk.get_appearance_mode()
-        self.conn = Connect_db()
+        self.conn = conn
         self.flag_image_fr = PhotoImage(file="Assets/flag_france.png")
         self.flag_image_en = PhotoImage(file="Assets/uk_flag.png")
 
@@ -68,14 +66,11 @@ class User(ctk.CTkFrame):
     def create_user(self):
 
         self.conn.connect_db()
-        print("connexion ok")
 
         nom = self.last_name_entry.get()
         prenom = self.first_name_entry.get()
         email = self.email_entry.get()
         password = self.password_entry.get()
-
-        print(f"{nom} {prenom} {email} {password}")
 
         if self.user_exists(email):
             print("Cet utilisateur existe déjà !")
@@ -83,8 +78,6 @@ class User(ctk.CTkFrame):
             return
         
         hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
-
-        print(f"{nom} {prenom} {email} {hashed_password}")
 
         try:
             querry = "INSERT INTO users (last_name, first_name, email, password) VALUES (%s, %s, %s, %s)"
@@ -213,7 +206,11 @@ class User(ctk.CTkFrame):
                 messagebox.showinfo("Succès", "Connexion réussie !")
                 
                 user_id = user[0]
-                self.show_main_menu(user_id)
+                self.conn.set_user_id(user_id)  # 🔹 Stocke l'ID utilisateur
+
+                print(f"🔍 [User] user_id transmis à Connect_db : {user_id}")
+
+                self.show_main_menu()
             else:
                 messagebox.showinfo("Erreur", "Email ou mot de passe incorrect")
                 print("Email ou mot de passe incorrect")

@@ -5,6 +5,9 @@ from dotenv import load_dotenv
 load_dotenv("config/.env")
 
 class Connect_db():
+    def __init__(self):
+        self.user_id = ""
+
 
     def connect_db(self):
 
@@ -23,6 +26,15 @@ class Connect_db():
     def close_db (self):
         self.cursor.close()
         self.mydb.close()
+
+    def set_user_id(self,user_id):
+        """define user_id"""
+        self.user_id = user_id
+        print(f"🔍 [Connect_db] user_id enregistré : {self.user_id}")
+
+    def get_user_id(self):
+        """get user_id"""
+        return self.user_id
 
 
 test = Connect_db()
