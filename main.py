@@ -15,13 +15,15 @@ class App(ctk.CTk):
         self.title("Budget Buddy")
         self.geometry(f"{self.width}x{self.height}")
 
+        self.conn = Connect_db()
+
         # Configurer la grille principale
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(0, weight=1)
 
         # Création des écrans
-        self.login_frame = User(self, self.show_main_menu)
-        self.main_menu_frame = Main_menu(self, self.show_frame)
+        self.login_frame = User(self, self.show_main_menu,self.conn)
+        self.main_menu_frame = Main_menu(self, self.show_frame,self.conn)
 
         # Afficher uniquement la connexion au début
         self.main_menu_frame.hide()
@@ -36,6 +38,7 @@ class App(ctk.CTk):
 
     def show_main_menu(self):
         """ Passe au menu principal après connexion """
+        self.main_menu_frame.load_user_data()
         self.show_frame(self.main_menu_frame)
 
 

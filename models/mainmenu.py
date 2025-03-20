@@ -1,16 +1,16 @@
 import customtkinter as ctk
+from tkinter import messagebox
 
 from models.connect_db import Connect_db
 
 
 class Main_menu(ctk.CTkFrame):
     """ Dashboard pour l'utilisateur avec plusieurs blocs """
-    def __init__(self, master, show_frame):
+    def __init__(self, master, show_frame,conn):
         super().__init__(master)
 
         self.show_frame = show_frame  # Permet de naviguer entre les écrans
-        self.conn = Connect_db()
-
+        self.conn = conn
 
         # 📌 Configuration de la grille
         self.grid_columnconfigure(0, weight=1)  # Colonne gauche
@@ -30,6 +30,9 @@ class Main_menu(ctk.CTkFrame):
         self.user_email = ctk.CTkLabel(self.user_info_frame, text="Email : lucas@example.com")
         self.user_email.pack()
 
+        self.create_account_button = ctk.CTkButton(self.user_info_frame,text= "Créer un compte",command=self.create_account)
+        self.create_account_button.pack(pady=50)
+
         # 💰 Bloc Solde du compte bancaire (à droite)
         self.account_balance_frame = ctk.CTkFrame(self)
         self.account_balance_frame.grid(row=0, column=1, padx=20, pady=20, sticky="nsew")  # Placement
@@ -44,18 +47,22 @@ class Main_menu(ctk.CTkFrame):
         self.logout_button = ctk.CTkButton(self, text="Déconnexion", command=lambda: self.show_frame(master.login_frame))
         self.logout_button.grid(row=1, column=0, columnspan=2, pady=20, sticky="s")
 
-    def load_user_data(self, user_id):
+
+    def load_user_data(self):
         """load information for user connected from DB"""
         self.conn.connect_db()
 
         try : 
+
+            user_id = self.conn.get_user_id() 
+            print(f"🔍 [Main_menu] user_id récupéré : {user_id}")  # Debug
+
             querry = """SELECT last_name,first_name,email
                         FROM users
                         WHERE id = %s
             """
-            value = user_id
 
-            self.conn.cursor.execute(querry,(value,))
+            self.conn.cursor.execute(querry,(user_id,))
             user_conneted = self.conn.cursor.fetchone()
 
             # user_conneted = {
@@ -70,6 +77,32 @@ class Main_menu(ctk.CTkFrame):
         except Exception as e:
             print("Erreur lors du chargement des infos utilisateur :", e)
         finally :
+            self.conn.close_db()
+
+    def create_account(self):
+        """create an account"""
+        
+        self.conn.connect_db()
+
+        try:
+
+            user_id = self.conn.get_user_id()
+            
+            querry = """INSERT INTO accounts (balance,user_id)
+                        VALUES (%s,%s)
+                    """
+            values = (0,user_id)
+
+            self.conn.cursor.execute(querry,values)
+            self.conn.mydb.commit()
+
+            messagebox.showinfo("Création de compte", "Création de compte effectué")
+            
+
+        except Exception as e:
+            print("Erreur lors de la connexion :", e)
+
+        finally:
             self.conn.close_db()
 
     def show(self):
