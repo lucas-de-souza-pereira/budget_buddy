@@ -1,5 +1,5 @@
 import customtkinter as ctk
-from database import connect_db
+from models.connect_db import Connect_db
 
 class TransactionApp:
     def __init__(self, root):
@@ -8,7 +8,7 @@ class TransactionApp:
         self.root.geometry("500x450")
         self.root.resizable(False, False)
 
-        self.conn = connect_db()
+        self.conn = Connect_db()
         self.cursor = self.conn.cursor()
 
         self.create_widgets()
@@ -16,51 +16,52 @@ class TransactionApp:
     def create_widgets(self):
         # Filtres
         filter_frame = ctk.CTkFrame(self.root)
-        filter_frame.grid(row=0, column=0, padx=10, pady=10, sticky="ew")
+        filter_frame.grid(row=0, column=0, padx=2, pady=2, sticky="ew")
 
-        ctk.CTkLabel(filter_frame, text="Filtres").grid(row=0, columnspan=2, pady=5)
+        ctk.CTkLabel(filter_frame, text="Filtres").grid(row=0, columnspan=2, pady=10)
 
         # Type
-        ctk.CTkLabel(filter_frame, text="Type :").grid(row=1, column=0, sticky="w")
+        ctk.CTkLabel(filter_frame, text="Type :").grid(row=1, column=0, sticky="w", padx=2, pady=2)
         self.type_var = ctk.StringVar(value="deposit")
-        self.type_box = ctk.CTkComboBox(filter_frame, values=["deposit", "withdrawall", "transfer"], variable=self.type_var)
-        self.type_box.grid(row=1, column=1)
-        ctk.CTkButton(filter_frame, text="Filtrer", command=self.filter_by_type).grid(row=1, column=2, padx=5)
+        self.type_box = ctk.CTkComboBox(filter_frame, values=["deposit", "withdrawal", "transfer"], variable=self.type_var)
+        self.type_box.grid(row=1, column=1, padx=2, pady=2)
+        ctk.CTkButton(filter_frame, text="Filtrer", command=self.filter_by_type).grid(row=1, column=2, padx=2, pady=2)
 
         # Catégorie
-        ctk.CTkLabel(filter_frame, text="Catégorie :").grid(row=2, column=0, sticky="w")
+        ctk.CTkLabel(filter_frame, text="Catégorie :").grid(row=2, column=0, sticky="w", padx=2, pady=2)
         self.category_var = ctk.StringVar(value="loisir")
         self.category_entry = ctk.CTkEntry(filter_frame, textvariable=self.category_var, width=120)
-        self.category_entry.grid(row=2, column=1)
-        ctk.CTkButton(filter_frame, text="Filtrer", command=self.filter_by_category).grid(row=2, column=2, padx=5)
+        self.category_entry.grid(row=2, column=1, padx=2, pady=2)
+        ctk.CTkButton(filter_frame, text="Filtrer", command=self.filter_by_category).grid(row=2, column=2, padx=2, pady=2)
 
         # Dates
-        ctk.CTkLabel(filter_frame, text="Date début :").grid(row=3, column=0, sticky="w")
+        ctk.CTkLabel(filter_frame, text="Date début :").grid(row=3, column=0, sticky="w", padx=2, pady=2)
         self.date_start = ctk.CTkEntry(filter_frame, width=100)
-        self.date_start.grid(row=3, column=1)
+        self.date_start.grid(row=3, column=1, padx=2, pady=2)
         self.date_start.bind("<KeyRelease>", lambda e: self.format_date_entry(e, self.date_start))
 
-        ctk.CTkLabel(filter_frame, text="Date fin :").grid(row=4, column=0, sticky="w")
+
+        ctk.CTkLabel(filter_frame, text="Date fin :").grid(row=4, column=0, sticky="w", padx=2, pady=2)
         self.date_end = ctk.CTkEntry(filter_frame, width=100)
-        self.date_end.grid(row=4, column=1)
+        self.date_end.grid(row=4, column=1, padx=2, pady=2)
         self.date_end.bind("<KeyRelease>", lambda e: self.format_date_entry(e, self.date_end))
 
-        ctk.CTkButton(filter_frame, text="Filtrer par Date", command=self.filter_by_date_range).grid(row=3, column=2, rowspan=2, padx=5, pady=5)
+        ctk.CTkButton(filter_frame, text="Filtrer par Date", command=self.filter_by_date_range).grid(row=3, column=2, rowspan=2, padx=2, pady=2)
 
         sort_frame = ctk.CTkFrame(self.root)
-        sort_frame.grid(row=1, column=0, padx=10, pady=5, sticky="ew")
+        sort_frame.grid(row=1, column=0, padx=2, pady=2, sticky="ew")
 
-        ctk.CTkLabel(sort_frame, text="Trier par Montant :").grid(row=0, column=0, sticky="w")
-        ctk.CTkButton(sort_frame, text="↑", width=30, command=lambda: self.sort_transactions("ASC")).grid(row=0, column=1, padx=5)
-        ctk.CTkButton(sort_frame, text="↓", width=30, command=lambda: self.sort_transactions("DESC")).grid(row=0, column=2, padx=5)
+        ctk.CTkLabel(sort_frame, text="Trier par Montant :").grid(row=0, column=0, sticky="w", padx=2, pady=2)
+        ctk.CTkButton(sort_frame, text="↑", width=30, command=lambda: self.sort_transactions("ASC")).grid(row=0, column=1, padx=2, pady=2)
+        ctk.CTkButton(sort_frame, text="↓", width=30, command=lambda: self.sort_transactions("DESC")).grid(row=0, column=2, padx=2, pady=2)
 
         display_frame = ctk.CTkFrame(self.root)
-        display_frame.grid(row=2, column=0, padx=10, pady=5, sticky="nsew")
+        display_frame.grid(row=2, column=0, padx=2, pady=2, sticky="nsew")
 
         self.result_box = ctk.CTkTextbox(display_frame, height=150, width=450, wrap="none")
-        self.result_box.pack(pady=5)
+        self.result_box.pack(padx=2, pady=2)
 
-        ctk.CTkButton(display_frame, text="Afficher toutes les transactions", command=self.show_all_transactions).pack(pady=5)
+        ctk.CTkButton(display_frame, text="Afficher toutes les transactions", command=self.show_all_transactions).pack(padx=2, pady=2)
 
     def fetch_transactions(self, query, params=()):
         """ Exécute une requête et affiche les résultats """
@@ -70,7 +71,16 @@ class TransactionApp:
         self.result_box.delete("0.0", "end")
         if transactions:
             for transaction in transactions:
-                self.result_box.insert("end", f"{transaction}\n")
+                formatted_transaction = f"""
+                Montant : {transaction[4]} €
+                Description : {transaction[3]}
+                Type : {transaction[6]}
+                Date : {transaction[5]}
+                Categorie : {transaction[7]}
+                
+                -------------------------------------------------------
+                """
+                self.result_box.insert("end", formatted_transaction)
         else:
             self.result_box.insert("end", "Aucune transaction trouvée.\n")
 
