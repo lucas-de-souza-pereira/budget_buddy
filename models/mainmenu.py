@@ -35,14 +35,15 @@ class Main_menu(ctk.CTkFrame):
         self.create_account_button.pack(pady=50)
 
 
-        # for checkbox
+        # for radiobutton
         self.values = ["Account N° :"]
-        self.checkboxes = []
+        self.radiobuttons_accounts = []
+        self.variable = ctk.StringVar(value="")
 
         for i, value in enumerate(self.values):
-            self.checkbox = ctk.CTkCheckBox(self.user_info_frame, text=value)
-            self.checkbox.pack(pady=5)
-            self.checkboxes.append(self.checkbox)
+            self.radiobutton = ctk.CTkRadioButton(self.user_info_frame, text=value)
+            self.radiobutton.pack(pady=5)
+            self.radiobuttons_accounts.append(self.radiobutton)
 
 
         # 💰 Bloc Solde du compte bancaire (à droite)
@@ -58,49 +59,6 @@ class Main_menu(ctk.CTkFrame):
         # 🔄 Bouton de Déconnexion en bas
         self.logout_button = ctk.CTkButton(self, text="Déconnexion", command=lambda: self.show_frame(master.login_frame))
         self.logout_button.grid(row=1, column=0, columnspan=2, pady=20, sticky="s")
-
-    def select_account(self):
-
-        self.conn.connect_db()
-
-        try : 
-
-            user_id = self.conn.get_user_id() 
-            print(f"🔍 [Main_menu][select_account] user_id récupéré : {user_id}")  
-
-            querry = """SELECT id,balance
-                        FROM accounts
-                        WHERE user_id = %s
-            """
-
-            self.conn.cursor.execute(querry,(user_id,))
-            data_accounts = self.conn.cursor.fetchall()
-            print(f"data account {data_accounts}")
-
-            for checkbox in self.checkboxes:
-                checkbox.destroy()
-                self.checkboxes.clear()
-
-            for i, account in enumerate(data_accounts):
-                account_text = f"Account N° : {account[0]} - Solde : {account[1]}€"
-                checkbox = ctk.CTkCheckBox(self.user_info_frame, text=account_text)
-                checkbox.pack(pady=5)
-                self.checkboxes.append(checkbox) 
-
-        except Exception as e:
-            print("Erreur lors du chargement des infos utilisateur :", e)
-        finally :
-            self.conn.close_db()
-
-
-
-    def get(self):
-        """get information to checkbox (example : click on 1, click on 2....)"""
-        checked_checkboxes = []
-        for checkbox in self.checkboxes:
-            if checkbox.get() == 1:
-                checked_checkboxes.append(checkbox.cget("text"))
-        return checked_checkboxes
 
 
     def load_user_data(self):
@@ -120,12 +78,6 @@ class Main_menu(ctk.CTkFrame):
             self.conn.cursor.execute(querry,(user_id,))
             user_conneted = self.conn.cursor.fetchone()
 
-            # user_conneted = {
-            #     "last_name" : user_conneted[0],
-            #     "first_name" : user_conneted[1],
-            #     "email" : user_conneted[2]
-            # }
-            
             self.user_name.configure(text= f"Name : {user_conneted[0]} {user_conneted[1]}")
             self.user_email.configure(text= f"Email : {user_conneted[2]}")
 
@@ -160,10 +112,63 @@ class Main_menu(ctk.CTkFrame):
         finally:
             self.conn.close_db()
 
+
+
+    def select_account(self):
+        """Fonction to select account on dashboard"""
+        self.conn.connect_db()
+
+        try : 
+
+            user_id = self.conn.get_user_id() 
+            print(f"🔍 [Main_menu][select_account] user_id récupéré : {user_id}")  
+
+            querry = """SELECT id,balance
+                        FROM accounts
+                        WHERE user_id = %s
+            """
+
+            self.conn.cursor.execute(querry,(user_id,))
+            data_accounts = self.conn.cursor.fetchall()
+            print(f"data account {data_accounts}")
+
+            for radiobutton in self.radiobuttons_accounts:
+                radiobutton.destroy()
+                self.radiobuttons_accounts.clear()
+
+            self.variable.set("") 
+
+
+            for i, account in enumerate(data_accounts):
+                account_text = f"Account N° : {account[0]} - Solde : {account[1]}€"
+                radiobutton = ctk.CTkRadioButton(
+                    self.user_info_frame, 
+                    text=account_text,
+                    variable=self.variable,
+                    value=[account[0]])
+                radiobutton.pack(pady=5)
+                self.radiobuttons_accounts.append(radiobutton) 
+
+        except Exception as e:
+            print("Erreur lors du chargement des infos utilisateur :", e)
+        finally :
+            self.conn.close_db()
+
+    def get_select_account(self):
+        """get value selected account"""
+        select_account = self.variable.get()
+
+        if select_account:
+            print(f"selected account : {select_account}")
+            return select_account
+
+
+
+
     def show(self):
-        """ Afficher le menu principal """
+        """ Print main menu"""
         self.grid(row=0, column=0, sticky="nsew")
 
     def hide(self):
-        """ Cacher le menu principal """
+        """ Hide main menu """
         self.grid_remove()
