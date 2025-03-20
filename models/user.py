@@ -45,11 +45,10 @@ class User(ctk.CTkFrame):
         self.connection_tittle = ctk.CTkLabel(self.account_connection_frame, text="Connexion", font=("Arial", 18))
         self.connection_tittle.pack(pady=30)
 
-        # Champs de connexion
-        self.email_entry_conn = ctk.CTkEntry(self.account_connection_frame, placeholder_text="Email")  # Nouveau champ pour la connexion
+        self.email_entry_conn = ctk.CTkEntry(self.account_connection_frame, placeholder_text="Email")
         self.email_entry_conn.pack(pady=10)
 
-        self.password_entry_conn = ctk.CTkEntry(self.account_connection_frame, placeholder_text="Mot de passe", show="*")  # Nouveau champ pour la connexion
+        self.password_entry_conn = ctk.CTkEntry(self.account_connection_frame, placeholder_text="Mot de passe", show="*")  # 
         self.password_entry_conn.pack(pady=10)
 
         self.login_button = ctk.CTkButton(self.account_connection_frame, text="Se connecter", command=self.sign_in)
@@ -68,8 +67,8 @@ class User(ctk.CTkFrame):
 
         last_name = self.last_name_entry.get()
         first_name = self.first_name_entry.get()
-        email = self.email_entry_create.get()  # Utilisez l'email spécifique à la création de compte
-        password = self.password_entry_create.get()  # Utilisez le mot de passe spécifique à la création de compte
+        email = self.email_entry_create.get()
+        password = self.password_entry_create.get()
 
         if not last_name or not first_name or not email or not password:
             messagebox.showinfo("Erreur", "Vous devez remplir tous les champs.")
@@ -80,9 +79,11 @@ class User(ctk.CTkFrame):
             messagebox.showinfo("Erreur", "L'utilisateur existe déjà")
             return
 
+
         hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
 
         try:
+
             query = "INSERT INTO users (last_name, first_name, email, password) VALUES (%s, %s, %s, %s)"
             values = (last_name, first_name, email, hashed_password.decode('utf-8'))
 
@@ -95,9 +96,8 @@ class User(ctk.CTkFrame):
 
             messagebox.showinfo("Succès", "Inscription réussie !")
             print("Inscription réussie !")
-            self.show_main_menu(user_id) 
+            self.show_main_menu(user_id)
 
-            # Réinitialiser les champs de création de compte
             self.last_name_entry.delete(0, tk.END)
             self.first_name_entry.delete(0, tk.END)
             self.email_entry_create.delete(0, tk.END)
@@ -107,6 +107,7 @@ class User(ctk.CTkFrame):
             print(f"Erreur : {e}")
         finally:
             self.conn.close_db()
+
 
     def check_connection(self, email, password):
         """ Vérifie les identifiants et passe au menu si valide """
@@ -151,7 +152,6 @@ class User(ctk.CTkFrame):
 
                 self.show_main_menu()
 
-                # Réinitialiser les champs de connexion
                 self.email_entry_conn.delete(0, tk.END)
                 self.password_entry_conn.delete(0, tk.END)
             else:
