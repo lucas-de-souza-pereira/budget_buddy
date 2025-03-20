@@ -1,6 +1,6 @@
 from models.connect_db import Connect_db
 from models.historical import Historical
-from models.transaction import Transaction
+
 from models.mainmenu import Main_menu
 from models.user import User
 

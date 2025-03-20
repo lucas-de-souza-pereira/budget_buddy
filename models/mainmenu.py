@@ -9,6 +9,7 @@ class Main_menu(ctk.CTkFrame):
     def __init__(self, master, show_frame,conn):
         super().__init__(master)
 
+        self.current_mode = ctk.get_appearance_mode()
         self.show_frame = show_frame  # Permet de naviguer entre les écrans
         self.conn = conn
 
@@ -58,8 +59,16 @@ class Main_menu(ctk.CTkFrame):
 
         # 🔄 Bouton de Déconnexion en bas
         self.logout_button = ctk.CTkButton(self, text="Déconnexion", command=lambda: self.show_frame(master.login_frame))
-        self.logout_button.grid(row=1, column=0, columnspan=2, pady=20, sticky="s")
+        self.logout_button.grid(row=1, column=0, columnspan=2, pady=20, sticky="e")
 
+        self.theme_button = ctk.CTkButton(self, text="Changer de thème", command=self.toggle_theme)
+        self.theme_button.grid(row=1, column=0, padx=10, pady=5, sticky="w" )
+
+    def toggle_theme(self):
+        """ Basculer entre le thème clair et sombre """
+        new_mode = "Dark" if self.current_mode == "Light" else "Light"
+        self.current_mode = new_mode
+        ctk.set_appearance_mode(new_mode)
 
     def load_user_data(self):
         """load information for user connected from DB"""
