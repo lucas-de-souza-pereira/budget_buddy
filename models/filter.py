@@ -129,3 +129,4 @@ if __name__ == "__main__":
     root = ctk.CTk()
     app = TransactionApp(root)
     root.mainloop()
+ 
