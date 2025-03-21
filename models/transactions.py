@@ -74,9 +74,6 @@ class TransactionManage(ctk.CTkFrame):
 
         self.update_transaction_type()
 
-
-        self.get_selected_account()
-
     def update_transaction_type(self, *args):
         """ Met à jour l'affichage en fonction du type de transaction sélectionné """
 
@@ -110,13 +107,13 @@ class TransactionManage(ctk.CTkFrame):
 
         querry = "SELECT id, name, balance FROM accounts WHERE user_id = %s"
         self.conn.cursor.execute(querry, (user_id,))
-        data_accounts = self.conn.cursor.fetchall()
+        self.data_accounts = self.conn.cursor.fetchall()
 
         for radiobutton in self.radiobuttons_accounts[:]:  
             radiobutton.destroy()
         self.radiobuttons_accounts.clear()
 
-        for i, account in enumerate(data_accounts):
+        for i, account in enumerate(self.data_accounts):
             account_text = f"N° de compte : {account[0]} - {account[1]} - Solde : {account[2]}€"
             radiobutton = ctk.CTkRadioButton(
                 self.frame_account, 
@@ -127,9 +124,7 @@ class TransactionManage(ctk.CTkFrame):
             radiobutton.pack(pady=3, anchor="w")
             self.radiobuttons_accounts.append(radiobutton) 
 
-
         self.conn.close_db()
-
 
     def get_selected_account(self):
         """ Retourne l'ID du compte sélectionné """
@@ -160,16 +155,53 @@ class TransactionManage(ctk.CTkFrame):
             self.status_label.configure(text="Error: Invalid amount", text_color="red")
             return
     
-        user_id = self.get_selected_account()
+        account_id = self.get_selected_account()
+        user_id = self.conn.get_user_id()
         reference = f"TR-{datetime.now().strftime('%Y%m%d%H%M%S')}"
-        sql = "INSERT INTO transactions (user_id, reference, description, montant, date, type) VALUES (%s, %s, %s, %s, %s, %s)"
-        values = (user_id, reference, description, montant, date_actuelle, type_transaction)
 
-        self.conn.cursor.execute(sql, values)
+        if self.type_transaction_var.get() == "deposit":
+            try : 
+                sql = """INSERT INTO transactions (account_id, reference, description, montant, date, type) 
+                VALUES (%s, %s, %s, %s, %s, %s)"""
+                values = (account_id, reference, description, amount, current_date, transaction_type)
+
+                self.conn.cursor.execute(sql, values)
+                self.conn.mydb.commit()
+                self.depot_it(amount)
+                self.afficher_transactions()
+
+            except Exception as e:
+                print(f"Error: {e}")
+            finally:
+                self.conn.close_db()
+
+        # self.status_label.configure(text="Transaction enregistrée !", text_color="green")
+        
+
+    def depot_it(self,amount):
+
+        print(self.data_accounts)
+        print(amount)
+        for account in self.data_accounts:
+            if account[0]== int(self.get_selected_account()):
+                balance = float(account[2])
+                break
+
+        new_balance = balance + amount
+        print(new_balance)
+        print(balance)
+        print(amount)
+
+        querry = ("""UPDATE accounts SET balance = %s
+                    WHERE id = %s""")
+
+        values = (new_balance,int(self.get_selected_account()))
+
+        self.conn.cursor.execute(querry, values)
         self.conn.mydb.commit()
-        self.status_label.configure(text="Transaction enregistrée !", text_color="green")
         self.afficher_transactions()
-        self.conn.close_db()
+
+
 
     def afficher_transactions(self):
         """ Affiche la liste des transactions """
