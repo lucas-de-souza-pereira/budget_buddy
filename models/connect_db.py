@@ -30,7 +30,7 @@ class Connect_db():
     def set_user_id(self,user_id):
         """define user_id"""
         self.user_id = user_id
-        print(f"🔍 [Connect_db] user_id enregistré : {self.user_id}")
+        print(f"🔍 [Connect_db] user_id saved : {self.user_id}")
 
     def get_user_id(self):
         """get user_id"""
