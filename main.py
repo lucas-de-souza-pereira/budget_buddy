@@ -49,6 +49,7 @@ class App(ctk.CTk):
 
     def show_transaction_page(self):
         self.show_frame(self.transaction_frame)
+        self.transaction_frame.select_account()
 
 
 if __name__ == "__main__":
