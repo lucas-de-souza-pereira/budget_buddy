@@ -17,7 +17,10 @@ class TransactionManage(ctk.CTkFrame):
         self.description_var = ctk.StringVar()
         self.type_transaction_var = ctk.StringVar(value="deposit")
 
-
+        self.grid_columnconfigure(0, weight=1)
+        self.grid_columnconfigure(1, weight=1)
+        self.grid_rowconfigure(0, weight=1)
+        
         self.frame_transaction = ctk.CTkFrame(self)
         self.frame_transaction.grid(row=0, column=0, padx=20, pady=20, sticky="nsew")
 
@@ -40,7 +43,16 @@ class TransactionManage(ctk.CTkFrame):
         self.transaction_listbox.grid(row=5, column=0, columnspan=2, padx=20, pady=10, sticky="nsew")
 
         ctk.CTkButton(self.frame_transaction, text="Actualiser Transactions", command=self.afficher_transactions).grid(pady=5)
+
+        self.theme_button = ctk.CTkButton(self, text="Changer de thème", command=self.toggle_theme)
+        self.theme_button.grid(row=0, column=2, padx=0, pady=20, sticky="ne")
     
+    def toggle_theme(self):
+        """ Basculer entre le thème clair et sombre """
+        new_mode = "Dark" if self.current_mode == "Light" else "Light"
+        self.current_mode = new_mode
+        ctk.set_appearance_mode(new_mode)
+        
     def effectuer_transaction(self):
         print("effect")
         self.conn.connect_db()
