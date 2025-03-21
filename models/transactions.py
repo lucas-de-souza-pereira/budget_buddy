@@ -145,19 +145,19 @@ class TransactionManage(ctk.CTkFrame):
         """ Enregistre une transaction dans la base de données """
         
         self.conn.connect_db()
-        montant = self.montant_var.get()
+        amount = self.montant_var.get()
         description = self.description_var.get()
-        type_transaction = self.type_transaction_var.get()
-        date_actuelle = datetime.now().strftime("%Y-%m-%d")
+        transaction_type = self.type_transaction_var.get()
+        current_date = datetime.now().strftime("%Y-%m-%d")
 
-        if not montant:
-            self.status_label.configure(text="Erreur : Montant requis", text_color="red")
+        if not amount:
+            self.status_label.configure(text="Error: Amount required", text_color="red")
             return
 
         try:
-            montant = float(montant)
+            amount = float(amount)
         except ValueError:
-            self.status_label.configure(text="Erreur : Montant invalide", text_color="red")
+            self.status_label.configure(text="Error: Invalid amount", text_color="red")
             return
     
         user_id = self.get_selected_account()
