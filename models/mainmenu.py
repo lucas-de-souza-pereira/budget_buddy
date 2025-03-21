@@ -1,7 +1,7 @@
 import customtkinter as ctk
 from tkinter import messagebox
 
-from models.connect_db import Connect_db
+
 
 
 class Main_menu(ctk.CTkFrame):
@@ -56,6 +56,12 @@ class Main_menu(ctk.CTkFrame):
 
         self.balance_amount = ctk.CTkLabel(self.account_balance_frame, text="Solde : 1500€")
         self.balance_amount.pack()
+
+        self.research_button = ctk.CTkButton(self.account_balance_frame,text="Rechercher",font=("Arial",16))
+        self.research_button.pack()
+
+        self.transaction_button = ctk.CTkButton(self.account_balance_frame,text="Transaction",command=self.master.show_transaction_page)
+        self.transaction_button.pack (pady=10)
 
         # 🔄 Bouton de Déconnexion en bas
         self.logout_button = ctk.CTkButton(self, text="Déconnexion", command=lambda: self.show_frame(master.login_frame))

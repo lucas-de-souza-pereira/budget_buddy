@@ -1,49 +1,49 @@
 import customtkinter as ctk
 from datetime import datetime
-from database import connect_db
 
-class TransactionManage:
-    def __init__(self, root):
-        self.conn = connect_db()
-        self.cursor = self.conn.cursor()
-        self.root = root
-        self.setup_ui()
-    
-    def setup_ui(self):
-        print("setup")
-        self.root.title("Elle C'est Elle")
-        self.root.geometry("600x500")
+
+class TransactionManage(ctk.CTkFrame):
+    def __init__(self,master,show_frame,conn):
+        super().__init__(master)
+
+        self.current_mode = ctk.get_appearance_mode()
+        self.show_frame = show_frame  # Permet de naviguer entre les écrans
+        self.conn = conn
+
+        # self.root.title("Elle C'est Elle")
+        # self.root.geometry("600x500")
 
         self.montant_var = ctk.StringVar()
         self.description_var = ctk.StringVar()
         self.type_transaction_var = ctk.StringVar(value="deposit")
 
-        frame = ctk.CTkFrame(self.root)
-        frame.pack(pady=20, padx=20, fill="both", expand=True)
 
-        ctk.CTkLabel(frame, text="Montant :").grid(row=0, column=0, padx=10, pady=5, sticky="w")
-        ctk.CTkEntry(frame, textvariable=self.montant_var).grid(row=0, column=1, padx=10, pady=5)
+        self.frame_transaction = ctk.CTkFrame(self)
+        self.frame_transaction.grid(row=0, column=0, padx=20, pady=20, sticky="nsew")
+
+        ctk.CTkLabel(self.frame_transaction, text="Montant :").grid(row=0, column=0, padx=10, pady=5, sticky="w")
+        ctk.CTkEntry(self.frame_transaction, textvariable=self.montant_var).grid(row=0, column=1, padx=10, pady=5)
         
-        ctk.CTkLabel(frame, text="Description :").grid(row=1, column=0, padx=10, pady=5, sticky="w")
-        ctk.CTkEntry(frame, textvariable=self.description_var).grid(row=1, column=1, padx=10, pady=5)
+        ctk.CTkLabel(self.frame_transaction, text="Description :").grid(row=1, column=0, padx=10, pady=5, sticky="w")
+        ctk.CTkEntry(self.frame_transaction, textvariable=self.description_var).grid(row=1, column=1, padx=10, pady=5)
         
-        ctk.CTkLabel(frame, text="Type de Transaction :").grid(row=2, column=0, padx=10, pady=5, sticky="w")
-        transaction_menu = ctk.CTkComboBox(frame, values=["deposit", "withdrawall", "transfer"], variable=self.type_transaction_var)
+        ctk.CTkLabel(self.frame_transaction, text="Type de Transaction :").grid(row=2, column=0, padx=10, pady=5, sticky="w")
+        transaction_menu = ctk.CTkComboBox(self.frame_transaction, values=["deposit", "withdrawall", "transfer"], variable=self.type_transaction_var)
         transaction_menu.grid(row=2, column=1, padx=10, pady=5)
         
-        ctk.CTkButton(frame, text="Effectuer Transaction", command=self.effectuer_transaction).grid(row=3, column=0, columnspan=2, pady=15)
+        ctk.CTkButton(self.frame_transaction, text="Effectuer Transaction", command=self.effectuer_transaction).grid(row=3, column=0, columnspan=2, pady=15)
         
-        self.status_label = ctk.CTkLabel(frame, text="", text_color="white")
+        self.status_label = ctk.CTkLabel(self.frame_transaction, text="", text_color="white")
         self.status_label.grid(row=4, column=0, columnspan=2, pady=5)
         
-        self.transaction_listbox = ctk.CTkTextbox(self.root, height=150, width=500)
-        self.transaction_listbox.pack(pady=10, padx=20, fill="both", expand=True)
+        self.transaction_listbox = ctk.CTkTextbox(self.frame_transaction, height=150, width=500)
+        self.transaction_listbox.grid(row=5, column=0, columnspan=2, padx=20, pady=10, sticky="nsew")
 
-        ctk.CTkButton(self.root, text="Actualiser Transactions", command=self.afficher_transactions).pack(pady=5)
+        ctk.CTkButton(self.frame_transaction, text="Actualiser Transactions", command=self.afficher_transactions).grid(pady=5)
     
     def effectuer_transaction(self):
         print("effect")
-        connect_db()
+        self.conn.connect_db()
         montant = self.montant_var.get()
         description = self.description_var.get()
         type_transaction = self.type_transaction_var.get()
@@ -68,13 +68,14 @@ class TransactionManage:
         
         print("effect3")
         
-        self.cursor.execute(sql, values)
+        self.conn.cursor.execute(sql, values)
         print("effect4")
-        self.conn.commit()
+        self.conn.mydb.commit()
         print("effect5")
         self.status_label.configure(text="Transaction enregistrée !", text_color="green")
         print("effect6")
         self.afficher_transactions()
+        self.conn.close_db()
     
     def afficher_transactions(self):
         print("affich")
@@ -87,10 +88,13 @@ class TransactionManage:
             ref, desc, montant, date, t_type = transaction
             self.transaction_listbox.insert("end", f"{date} | {t_type.upper()} | {desc} : {montant}€\n")
 
-if __name__ == "__main__":
-    ctk.set_appearance_mode("dark")
-    ctk.set_default_color_theme("blue")
-    
-    app = ctk.CTk()
-    TransactionManage(app)
-    app.mainloop()
+
+
+    def show(self):
+        """ Afficher la fenêtre des transactions """
+        self.grid(row=0, column=0, sticky="nsew")  
+
+    def hide(self):
+        """ Cacher la fenêtre des transactions """
+        self.grid_remove()  
+
