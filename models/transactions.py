@@ -80,13 +80,17 @@ class TransactionManage(ctk.CTkFrame):
     def afficher_transactions(self):
         print("affich")
 
-        self.cursor.execute("SELECT reference, description, montant, date, type FROM transactions ORDER BY date DESC")
+        self.conn.cursor.execute("SELECT reference, description, montant, date, type FROM transactions ORDER BY date DESC")
         transactions = self.cursor.fetchall()
         
         self.transaction_listbox.delete("all")
         for transaction in transactions:
             ref, desc, montant, date, t_type = transaction
             self.transaction_listbox.insert("end", f"{date} | {t_type.upper()} | {desc} : {montant}€\n")
+    
+    def close_db (self):
+        self.cursor.close()
+        self.mydb.close()
 
 
 
