@@ -14,7 +14,9 @@ class TransactionManage(ctk.CTkFrame):
         self.description_var = ctk.StringVar()
         self.type_transaction_var = ctk.StringVar(value="deposit")
         self.variable = ctk.StringVar(value="")
-        
+        self.type_transaction_var.trace_add("write", self.update_transaction_type)
+
+
         self.grid_columnconfigure((0, 1), weight=1)  
         self.grid_rowconfigure(0, weight=4)  
         self.grid_rowconfigure(1, weight=1)  
@@ -28,33 +30,35 @@ class TransactionManage(ctk.CTkFrame):
 
         self.radiobuttons_accounts = []
 
-        # 💳 **Bloc 2 : input transaction* (Colonne 1)
+        # 💳 **Bloc 2 : input transaction** (Colonne 1)
         self.frame_transaction = ctk.CTkFrame(self)
         self.frame_transaction.grid(row=0, column=1, padx=20, pady=20, sticky="nsew")
-        self.frame_transaction.grid_rowconfigure(0, weight=2)
 
         ctk.CTkLabel(self.frame_transaction, text="Type de Transaction :").pack(pady=5, anchor="w")
-        self.transaction_menu = ctk.CTkComboBox(self.frame_transaction, 
-                                                values=["deposit", "withdrawall", "transfer"],
-                                                variable=self.type_transaction_var,
-                                                command=self.update_transaction_type)
+        self.transaction_menu = ctk.CTkComboBox(
+            self.frame_transaction, 
+            values=["deposit", "withdrawall", "transfer"], 
+            variable=self.type_transaction_var
+        )
         self.transaction_menu.pack(pady=2, fill="x")
 
-        ctk.CTkLabel(self.frame_transaction, text="Montant :").pack(pady=5, anchor="w")
-        self.amount_entry = ctk.CTkEntry(self.frame_transaction, textvariable=self.montant_var)
-        self.amount_entry.pack(pady=2, fill="x")
 
-        ctk.CTkLabel(self.frame_transaction, text="Description :").pack(pady=5, anchor="w")
-        self.description_entry = ctk.CTkEntry(self.frame_transaction, textvariable=self.description_var)
-        self.description_entry.pack(pady=2, fill="x")
+        self.label_montant = ctk.CTkLabel(self.frame_transaction, text="Montant :")
+        self.entry_montant = ctk.CTkEntry(self.frame_transaction, textvariable=self.montant_var)
 
+        self.label_description = ctk.CTkLabel(self.frame_transaction, text="Description :")
+        self.entry_description = ctk.CTkEntry(self.frame_transaction, textvariable=self.description_var)
+
+
+        self.label_compte = ctk.CTkLabel(self.frame_transaction, text="Compte à créditer :")
+        self.entry_compte = ctk.CTkEntry(self.frame_transaction, textvariable=self.credited_account)
 
 
         # 📋 **Bloc 3 : action transaction** (Row 1, Colspan=2)
         self.frame_bottom = ctk.CTkFrame(self)
         self.frame_bottom.grid(row=1, column=0, columnspan=2, padx=20, pady=0, sticky="nsew")
 
-        # Boutons
+
         self.button_frame = ctk.CTkFrame(self.frame_bottom)
         self.button_frame.pack(pady=10, fill="x")
 
@@ -64,74 +68,43 @@ class TransactionManage(ctk.CTkFrame):
         self.refresh_button = ctk.CTkButton(self.button_frame, text="Actualiser Transactions", command=self.afficher_transactions)
         self.refresh_button.pack(side="left", padx=5, expand=True)
 
-        # Zone d'affichage des transactions
+
         self.transaction_listbox = ctk.CTkTextbox(self.frame_bottom, height=100, width=500)
         self.transaction_listbox.pack(pady=10, padx=10, fill="both", expand=True)
 
-    def update_transaction_type(self, event=None):
+        self.update_transaction_type()
+
+
+        self.get_selected_account()
+
+    def update_transaction_type(self, *args):
         """ Met à jour l'affichage en fonction du type de transaction sélectionné """
-        
 
-        for widget in self.frame_transaction.winfo_children():
-            widget.destroy()
-        
-        ctk.CTkLabel(self.frame_transaction, text="Type de Transaction :").pack(pady=5, anchor="w")
-        self.transaction_menu = ctk.CTkComboBox(
-            self.frame_transaction, 
-            values=["deposit", "withdrawall", "transfer"], 
-            variable=self.type_transaction_var, 
-            command=self.update_transaction_type 
-        )
-        self.transaction_menu.pack(pady=2, fill="x")
+        self.label_montant.pack_forget()
+        self.entry_montant.pack_forget()
+        self.label_description.pack_forget()
+        self.entry_description.pack_forget()
+        self.label_compte.pack_forget()
+        self.entry_compte.pack_forget()
 
-        if self.type_transaction_var.get() == "deposit":
-            self.show_depot_it()
-        elif self.type_transaction_var.get() == "withdrawall":
-            self.show_withdrawall()
-        elif self.type_transaction_var.get() == "transfer":
-            self.show_transfer()
+        # show montant and decription, reset data if change 
+        self.label_montant.pack(pady=2, fill="x")
+        self.entry_montant.pack(pady=2, fill="x")
+        self.entry_montant.delete(0, "end") 
 
-    
-    def show_depot_it(self):
+        self.label_description.pack(pady=2, fill="x")
+        self.entry_description.pack(pady=2, fill="x")
+        self.entry_description.delete(0, "end")  
 
-        ctk.CTkLabel(self.frame_transaction, text="Montant :").pack(pady=5, anchor="w")
-        self.amount_entry = ctk.CTkEntry(self.frame_transaction, textvariable=self.montant_var)
-        self.amount_entry.pack(pady=2, fill="x")
-
-        ctk.CTkLabel(self.frame_transaction, text="Description :").pack(pady=5, anchor="w")
-        self.description_entry = ctk.CTkEntry(self.frame_transaction, textvariable=self.description_var)
-        self.description_entry.pack(pady=2, fill="x")
-
-    def show_withdrawall(self):
-
-        ctk.CTkLabel(self.frame_transaction, text="Montant :").pack(pady=5, anchor="w")
-        self.amount_entry = ctk.CTkEntry(self.frame_transaction, textvariable=self.montant_var)
-        self.amount_entry.pack(pady=2, fill="x")
-
-        ctk.CTkLabel(self.frame_transaction, text="Description :").pack(pady=5, anchor="w")
-        self.description_entry = ctk.CTkEntry(self.frame_transaction, textvariable=self.description_var)
-        self.description_entry.pack(pady=2, fill="x")
-
-    def show_transfer(self):
-
-        ctk.CTkLabel(self.frame_transaction,text="Compte à créditer").pack(pady=5, anchor="w")
-        self.credited_account_entry = ctk.CTkEntry(self.frame_transaction, textvariable=self.credited_account)
-        self.credited_account_entry.pack(pady=2, fill="x")
-
-        ctk.CTkLabel(self.frame_transaction, text="Montant :").pack(pady=5, anchor="w")
-        self.amount_entry = ctk.CTkEntry(self.frame_transaction, textvariable=self.montant_var)
-        self.amount_entry.pack(pady=2, fill="x")
-
-        ctk.CTkLabel(self.frame_transaction, text="Description :").pack(pady=5, anchor="w")
-        self.description_entry = ctk.CTkEntry(self.frame_transaction, textvariable=self.description_var)
-        self.description_entry.pack(pady=2, fill="x")
-
-
-
+        # show credited account , reset data if change 
+        if self.type_transaction_var.get() == "transfer":
+            self.label_compte.pack(pady=2, fill="x")
+            self.entry_compte.pack(pady=2, fill="x")
+            self.entry_compte.delete(0, "end") 
 
 
     def select_account(self):
-        """ Met à jour la liste des comptes disponibles """
+        """ Select an account """
         self.conn.connect_db()
         user_id = self.conn.get_user_id()
 
@@ -139,12 +112,10 @@ class TransactionManage(ctk.CTkFrame):
         self.conn.cursor.execute(querry, (user_id,))
         data_accounts = self.conn.cursor.fetchall()
 
-        # 🔄 Supprime les anciens boutons radio
         for radiobutton in self.radiobuttons_accounts[:]:  
             radiobutton.destroy()
         self.radiobuttons_accounts.clear()
 
-        # ✅ Ajoute les nouveaux boutons radio
         for i, account in enumerate(data_accounts):
             account_text = f"N° de compte : {account[0]} - {account[1]} - Solde : {account[2]}€"
             radiobutton = ctk.CTkRadioButton(
@@ -156,10 +127,23 @@ class TransactionManage(ctk.CTkFrame):
             radiobutton.pack(pady=3, anchor="w")
             self.radiobuttons_accounts.append(radiobutton) 
 
+
         self.conn.close_db()
+
+
+    def get_selected_account(self):
+        """ Retourne l'ID du compte sélectionné """
+        selected_account_id = self.variable.get()
+        if selected_account_id:
+            print(f"✅ Compte sélectionné : {selected_account_id}")
+            return selected_account_id
+        else:
+            print("⚠️ Aucun compte sélectionné.")
+            return None
 
     def effectuer_transaction(self):
         """ Enregistre une transaction dans la base de données """
+        
         self.conn.connect_db()
         montant = self.montant_var.get()
         description = self.description_var.get()
@@ -176,7 +160,7 @@ class TransactionManage(ctk.CTkFrame):
             self.status_label.configure(text="Erreur : Montant invalide", text_color="red")
             return
     
-        user_id = 1
+        user_id = self.get_selected_account()
         reference = f"TR-{datetime.now().strftime('%Y%m%d%H%M%S')}"
         sql = "INSERT INTO transactions (user_id, reference, description, montant, date, type) VALUES (%s, %s, %s, %s, %s, %s)"
         values = (user_id, reference, description, montant, date_actuelle, type_transaction)
