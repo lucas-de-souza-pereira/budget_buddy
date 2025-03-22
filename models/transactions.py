@@ -73,7 +73,13 @@ class TransactionManage(ctk.CTkFrame):
         self.transaction_listbox = ctk.CTkTextbox(self.frame_bottom, height=100, width=500)
         self.transaction_listbox.pack(pady=10, padx=10, fill="both", expand=True)
 
+
+
+        self.back_button = ctk.CTkButton(self.frame_bottom, text="← Retour au menu", command=self.master.show_main_menu)
+        self.back_button.pack(pady=5)
+
         self.update_transaction_type()
+
 
     def update_transaction_type(self, *args):
         """ Met à jour l'affichage en fonction du type de transaction sélectionné """
@@ -175,7 +181,7 @@ class TransactionManage(ctk.CTkFrame):
 
 
         self.select_account()
-        # self.afficher_transactions()
+        self.afficher_transactions()
 
 
 
@@ -314,13 +320,31 @@ class TransactionManage(ctk.CTkFrame):
     def afficher_transactions(self):
         """ Affiche la liste des transactions """
         self.conn.connect_db()
-        self.conn.cursor.execute("SELECT reference, description, montant, date, type FROM transactions ORDER BY date DESC")
+
+        querry = """SELECT reference, description, montant, date, type, account_id 
+                                FROM transactions 
+                                WHERE account_id IN (%s, %s, %s)
+                                ORDER BY date DESC"""
+        
+        account_id_list = []
+        for account_id in self.data_accounts:
+            account_id_list.append(account_id[0])
+
+        print(f"account_id_list = {account_id_list}")
+
+        self.conn.cursor.execute(querry,(account_id_list))
         transactions = self.conn.cursor.fetchall()
 
-        self.transaction_listbox.delete("all")
+        # self.transaction_listbox.delete("all")
         for transaction in transactions:
-            ref, desc, montant, date, t_type = transaction
-            self.transaction_listbox.insert("end", f"{date} | {t_type.upper()} | {desc} : {montant}€\n")
+            # ref, desc, montant, date, t_type = transaction
+            reference = transaction[0]
+            desc = transaction[1]
+            amount = float(transaction[2])
+            date = transaction[3]
+            t_type = transaction[4]
+            account_id = transaction[5]
+            self.transaction_listbox.insert("end", f"Account : {account_id} | {reference} | {date} | {t_type} | {desc} : {amount}€\n")
 
         self.conn.close_db()
 
