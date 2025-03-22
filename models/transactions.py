@@ -1,5 +1,6 @@
 import customtkinter as ctk
 from datetime import datetime
+from tkinter import messagebox
 
 
 class TransactionManage(ctk.CTkFrame):
@@ -144,6 +145,7 @@ class TransactionManage(ctk.CTkFrame):
         description = self.description_var.get()
         transaction_type = self.type_transaction_var.get()
         current_date = datetime.now().strftime("%Y-%m-%d")
+        cretited_account = self.entry_compte.get()
 
         if not amount:
             self.status_label.configure(text="Error: Amount required", text_color="red")
@@ -160,37 +162,50 @@ class TransactionManage(ctk.CTkFrame):
         reference = f"TR-{datetime.now().strftime('%Y%m%d%H%M%S')}"
 
         if self.type_transaction_var.get() == "deposit":
-            try : 
-                sql = """INSERT INTO transactions (account_id, reference, description, montant, date, type) 
-                VALUES (%s, %s, %s, %s, %s, %s)"""
-                values = (account_id, reference, description, amount, current_date, transaction_type)
 
-                self.conn.cursor.execute(sql, values)
-                self.conn.mydb.commit()
-                self.depot_it(amount)
-                self.afficher_transactions()
+            self.querry_depot_it(account_id, reference, description, amount, current_date, transaction_type)
+            
+        if self.type_transaction_var.get() == "withdrawall":
 
-            except Exception as e:
-                print(f"Error: {e}")
-            finally:
-                self.conn.close_db()
+            self.querry_withdrawall(account_id, reference, description, amount, current_date, transaction_type)
+
+        if self.type_transaction_var.get() == "transfer":
+
+            self.querry_transfer(account_id, reference, description, amount, current_date, transaction_type,cretited_account)
+
+
+        self.select_account()
+        # self.afficher_transactions()
+
+
 
         # self.status_label.configure(text="Transaction enregistrée !", text_color="green")
         
 
+    def querry_depot_it(self,account_id, reference, description, amount, current_date, transaction_type):
+        try : 
+            sql = """INSERT INTO transactions (account_id, reference, description, montant, date, type) 
+            VALUES (%s, %s, %s, %s, %s, %s)"""
+            values = (account_id, reference, description, amount, current_date, transaction_type)
+
+            self.conn.cursor.execute(sql, values)
+            self.conn.mydb.commit()
+            self.depot_it(amount)
+
+        except Exception as e:
+            print(f"Error: {e}")
+        finally:
+            self.conn.close_db()
+
+
     def depot_it(self,amount):
 
-        print(self.data_accounts)
-        print(amount)
         for account in self.data_accounts:
             if account[0]== int(self.get_selected_account()):
                 balance = float(account[2])
                 break
 
         new_balance = balance + amount
-        print(new_balance)
-        print(balance)
-        print(amount)
 
         querry = ("""UPDATE accounts SET balance = %s
                     WHERE id = %s""")
@@ -199,8 +214,101 @@ class TransactionManage(ctk.CTkFrame):
 
         self.conn.cursor.execute(querry, values)
         self.conn.mydb.commit()
-        self.afficher_transactions()
+        
 
+
+    def querry_withdrawall(self,account_id, reference, description, amount, current_date, transaction_type):
+        try : 
+            sql = """INSERT INTO transactions (account_id, reference, description, montant, date, type) 
+            VALUES (%s, %s, %s, %s, %s, %s)"""
+            values = (account_id, reference, description, amount, current_date, transaction_type)
+
+            self.conn.cursor.execute(sql, values)
+            self.conn.mydb.commit()
+            self.withdrawall(amount)
+
+        except Exception as e:
+            print(f"Error: {e}")
+        finally:
+            self.conn.close_db()
+
+    def withdrawall(self,amount):
+
+        for account in self.data_accounts:
+            if account[0]== int(self.get_selected_account()):
+                balance = float(account[2])
+                break
+
+        new_balance = balance - amount
+
+        querry = ("""UPDATE accounts SET balance = %s
+                    WHERE id = %s""")
+
+        values = (new_balance,int(self.get_selected_account()))
+
+        self.conn.cursor.execute(querry, values)
+        self.conn.mydb.commit()
+
+    def credited_account_dont_exists(self, credited_account):
+        self.conn.cursor.execute("SELECT id FROM accounts WHERE id = %s", (credited_account,))
+        id_credited_account = self.conn.cursor.fetchone()
+        return id_credited_account is None 
+
+
+    def querry_transfer(self,account_id, reference, description, amount, current_date, transaction_type,credited_account):
+        
+        print(f"credited : {credited_account} tr : {transaction_type}")
+
+        if self.credited_account_dont_exists(credited_account):
+            messagebox.showinfo("Error", "Credited account dont' exist")
+            return
+
+        try : 
+            sql = """INSERT INTO transactions (account_id, reference, description, montant, date, type,credited_account_id) 
+            VALUES (%s, %s, %s, %s, %s, %s, %s)"""
+            values = (account_id, reference, description, amount, current_date, transaction_type,credited_account)
+
+            self.conn.cursor.execute(sql, values)
+            self.conn.mydb.commit()
+            self.transfer(amount,credited_account)
+
+        except Exception as e:
+            print(f"Error: {e}")
+        finally:
+            self.conn.close_db()
+
+
+    def transfer(self,amount,credited_account):
+
+        for account in self.data_accounts:
+            if account[0]== int(self.get_selected_account()):
+                balance = float(account[2])
+                break
+
+        new_balance = balance - amount
+
+        querry = ("""UPDATE accounts SET balance = %s
+                    WHERE id = %s""")
+
+        values = (new_balance,int(self.get_selected_account()))
+
+        self.conn.cursor.execute(querry, values)
+        self.conn.mydb.commit()
+
+
+        querry = "SELECT balance FROM accounts WHERE id = %s"
+        self.conn.cursor.execute(querry, (credited_account,))
+        balance_credited_account = self.conn.cursor.fetchone()
+
+        new_balance = float(balance_credited_account[0]) + amount
+
+        querry = ("""UPDATE accounts SET balance = %s
+                    WHERE id = %s""")
+
+        values = (new_balance,credited_account)
+
+        self.conn.cursor.execute(querry, values)
+        self.conn.mydb.commit()
 
 
     def afficher_transactions(self):
