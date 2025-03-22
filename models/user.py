@@ -4,9 +4,10 @@ import tkinter as tk
 from tkinter import messagebox
 
 class User(ctk.CTkFrame):
-    def __init__(self, master, show_main_menu, conn):
+    def __init__(self, master, show_main_menu, show_admin_menu, conn):
         super().__init__(master)
         self.show_main_menu = show_main_menu  
+        self.show_admin_menu = show_admin_menu
 
         self.current_mode = ctk.get_appearance_mode()
         self.conn = conn
@@ -149,31 +150,39 @@ class User(ctk.CTkFrame):
         new_mode = "Dark" if self.current_mode == "Light" else "Light"
         self.current_mode = new_mode
         ctk.set_appearance_mode(new_mode)
-    
+        
     def sign_in(self):
         self.conn.connect_db()
 
         email = self.email_entry_conn.get()
         password = self.password_entry_conn.get()
+
         try: 
             self.conn.cursor.execute("SELECT id FROM users WHERE email = %s", (email,))
             user = self.conn.cursor.fetchone()
             
             if not email or not password:
                 messagebox.showinfo("Error", "All fields must be filled out.")
+            
             elif self.check_connection(email, password):
                 print("Login successful!")
                 messagebox.showinfo("Success", "Login successful!")
-                
+
                 user_id = user[0]
                 self.conn.set_user_id(user_id)
 
                 print(f"🔍 [User] user_id passed to Connect_db: {user_id}")
 
-                self.show_main_menu()
+                # Vérification email admin
+                if email == "shrek@mail.com":  
+                    self.show_admin_menu(user_id)  # ✅ Passe l'ID utilisateur
+                else:
+                    self.show_main_menu(user_id)  # ✅ Passe l'ID utilisateur
+
 
                 self.email_entry_conn.delete(0, tk.END)
                 self.password_entry_conn.delete(0, tk.END)
+
             else:
                 messagebox.showinfo("Error", "Incorrect email or password")
                 print("Incorrect email or password")
@@ -182,6 +191,8 @@ class User(ctk.CTkFrame):
             print("Error during login:", e)
         finally:
             self.conn.close_db()
+
+
 
     def show(self):
         """ Show the login screen """
