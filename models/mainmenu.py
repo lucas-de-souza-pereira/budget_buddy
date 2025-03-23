@@ -1,5 +1,7 @@
 import customtkinter as ctk
 from tkinter import messagebox
+import matplotlib.pyplot as plt
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 
 class Main_menu(ctk.CTkFrame):
@@ -51,11 +53,26 @@ class Main_menu(ctk.CTkFrame):
         self.balance_label = ctk.CTkLabel(self.account_balance_frame, text="💰 Account Balance", font=("Arial", 16))
         self.balance_label.pack(pady=10)
 
-        self.balance_amount = ctk.CTkLabel(self.account_balance_frame, text="Balance : 1500€")
+        self.balance_amount = ctk.CTkLabel(self.account_balance_frame, text="Total balance : ")
         self.balance_amount.pack()
 
+
+        # Frame pour le graphique
+        self.graph_frame = ctk.CTkFrame(self.account_balance_frame)
+        self.graph_frame.pack(padx=10, pady=10, fill="both", expand=True)
+
+        # Initialisation du graphique
+        self.fig, self.ax = plt.subplots(figsize=(5, 3))
+        self.canvas = FigureCanvasTkAgg(self.fig, master=self.graph_frame)
+        self.canvas.draw()
+        self.canvas.get_tk_widget().pack(fill="both", expand=True)
+
+        # Graphique de base
+        self.update_graph([], [], "monthly balance")
+
+
         self.research_button = ctk.CTkButton(self.account_balance_frame, text="Search")
-        self.research_button.pack()
+        self.research_button.pack(pady=10)
 
         self.transaction_button = ctk.CTkButton(self.account_balance_frame, text="Transaction", command=self.master.show_transaction_page)
         self.transaction_button.pack(pady=10)
@@ -91,6 +108,10 @@ class Main_menu(ctk.CTkFrame):
 
             self.user_name.configure(text=f"Name : {user_connected[0]} {user_connected[1]}")
             self.user_email.configure(text=f"Email : {user_connected[2]}")
+
+            self.total_balance(user_id)
+
+
 
         except Exception as e:
             print("Error while loading user info:", e)
@@ -175,23 +196,82 @@ class Main_menu(ctk.CTkFrame):
             self.variable.set("") 
 
             for i, account in enumerate(data_accounts):
-                account_text = f"Account N° : {account[0]} - Name : {account[1]} - Balance : {account[2]}€"
+                account_text = f"Account N° : {account[0]} - {account[1]} - Balance : {account[2]}€"
                 radiobutton = ctk.CTkRadioButton(
                     self.user_info_frame, 
                     text=account_text,
                     variable=self.variable,
-                    value=account[0])
-                radiobutton.pack(pady=3, padx=50, anchor="w", fill="x")
+                    value=account[0],
+                    command=self.on_account_selected
+                    )
+                radiobutton.pack(pady=3, padx=10, anchor="w", fill="x")
                 self.radiobuttons_accounts.append(radiobutton) 
+
+            self.select_account_graphic(data_accounts)
+
 
         except Exception as e:
             print("Error while loading account data:", e)
         finally:
             self.conn.close_db()
 
+    def on_account_selected(self):
+        """ Appelé automatiquement quand un compte est sélectionné via radio """
+
+        selected_id = self.get_selected_account()
+
+        if selected_id is None:
+            return
+
+        try:
+            selected_id = int(selected_id)
+        except ValueError:
+            return
+
+        self.graphical_data(selected_id)
+
+
+    def graphical_data(self,selected_id):
+
+        self.conn.connect_db()
+
+        query = """SELECT MONTHNAME(date), SUM(montant)
+                    FROM transactions
+                    WHERE account_id = %s
+                    GROUP BY MONTHNAME(date)
+            """
+
+        self.conn.cursor.execute(query, (selected_id,))
+        data_graphic = self.conn.cursor.fetchall()
+
+        print(data_graphic)
+        self.update_graph(data_graphic[0][0],float(data_graphic[0][1]))
+
+        self.conn.close_db()
+
+    def update_graph(self, x_data, y_data, title="Monthly balance"):
+        """ Met à jour dynamiquement le graphique matplotlib """
+        self.ax.clear() 
+        self.ax.bar(x_data, y_data)
+        self.ax.set_title(title)
+        self.canvas.draw()
+
+    def total_balance(self,user_id):
+
+            query = """SELECT SUM(balance)
+                       FROM accounts
+                       WHERE user_id = %s
+            """
+
+            self.conn.cursor.execute(query, (user_id,))
+            total_balance = self.conn.cursor.fetchone()
+
+            self.balance_amount.configure(text=f"Total balance : {float(total_balance[0])} €")
+
     def get_selected_account(self):
         """ Get the selected account value """
         selected_account = self.variable.get()
+
 
         if selected_account:
             print(f"Selected account : {selected_account}")
