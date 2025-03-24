@@ -9,32 +9,32 @@ class TransactionApp(ctk.CTkFrame):
         self.conn = conn
         self.current_mode = ctk.get_appearance_mode()
         
-        # Variable pour stocker l'ID du compte sélectionné
+        # Variable to store the selected account ID
         self.account_id = None
         self.radiobuttons_accounts = []
         self.variable = ctk.IntVar()
 
         # Grid configuration for layout
         self.grid_columnconfigure((0, 1), weight=1)
-        self.grid_rowconfigure(0, weight=1)  # Compte
-        self.grid_rowconfigure(1, weight=1)   # Filtres
-        self.grid_rowconfigure(2, weight=1)   # Tri
-        self.grid_rowconfigure(3, weight=4)   # Résultats
+        self.grid_rowconfigure(0, weight=1)  # Account
+        self.grid_rowconfigure(1, weight=1)   # Filters
+        self.grid_rowconfigure(2, weight=1)   # Sorting
+        self.grid_rowconfigure(3, weight=4)   # Results
 
-        # Frame pour la sélection du compte
+        # Frame for account selection
         self.account_frame = ctk.CTkFrame(self)
         self.account_frame.grid(row=0, column=0, padx=10, pady=10, sticky="ew", columnspan=2)
         
         ctk.CTkLabel(self.account_frame, text="Select Account:").pack(pady=5)
         
-        # Bouton pour rafraîchir la liste des comptes
+        # Button to refresh the account list
         ctk.CTkButton(self.account_frame, text="Refresh Accounts", command=self.select_account).pack(pady=5)
         
-        # Frame pour afficher les radios boutons des comptes
+        # Frame to display account radio buttons
         self.frame_account = ctk.CTkScrollableFrame(self.account_frame, height=100)
         self.frame_account.pack(pady=5, fill="both", expand=True)
         
-        # Bouton pour valider la sélection du compte
+        # Button to validate account selection
         ctk.CTkButton(self.account_frame, text="Show Transactions", command=self.show_selected_account_transactions).pack(pady=5)
 
         # Frame for filters
@@ -90,8 +90,7 @@ class TransactionApp(ctk.CTkFrame):
 
         self.theme_button = ctk.CTkButton(self, text="Change Theme", command=self.toggle_theme)
         self.theme_button.grid(row=3, column=1, padx=20, pady=5, sticky="se")
-
-        # Charger les comptes au démarrage
+        # Load accounts on startup
         self.select_account()
 
     def toggle_theme(self):
@@ -109,13 +108,13 @@ class TransactionApp(ctk.CTkFrame):
         self.conn.cursor.execute(query, (user_id,))
         self.data_accounts = self.conn.cursor.fetchall()
 
-        # Clear existing radiobuttons
+        # Clear existing radio buttons
         for widget in self.frame_account.winfo_children():
             widget.destroy()
 
-        # Create new radiobuttons for each account
+        # Create new radio buttons for each account
         for account in self.data_accounts:
-            account_text = f"Account N°{account[0]} - {account[1]} - Balance: {account[2]}€"
+            account_text = f"Account No. {account[0]} - {account[1]} - Balance: {account[2]}€"
             radiobutton = ctk.CTkRadioButton(
                 self.frame_account, 
                 text=account_text,
@@ -144,7 +143,7 @@ class TransactionApp(ctk.CTkFrame):
 
         self.conn.connect_db()
 
-        # Ajouter l'account_id aux paramètres si nécessaire
+        # Add account_id to parameters if necessary
         if "account_id" not in query.lower():
             query += " WHERE account_id = %s"
             params = (self.account_id,) + params
@@ -197,7 +196,7 @@ class TransactionApp(ctk.CTkFrame):
     def show(self):
         """ Display the search window """
         self.grid(row=0, column=0, sticky="nsew")
-        # Rafraîchir la liste des comptes à chaque affichage
+        # Refresh the account list every time it's displayed
         self.select_account()
 
     def hide(self):
