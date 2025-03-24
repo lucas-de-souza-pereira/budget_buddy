@@ -2,6 +2,7 @@ import customtkinter as ctk
 import bcrypt
 import tkinter as tk
 from tkinter import messagebox
+import re
 
 class User(ctk.CTkFrame):
     def __init__(self, master, show_main_menu, show_admin_menu, conn):
@@ -94,13 +95,30 @@ class User(ctk.CTkFrame):
         email = self.email_entry_create.get()
         password = self.password_entry_create.get()
 
+        regex = r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\w])[A-Za-z\d\W]{10,}$"
+
         if not last_name or not first_name or not email or not password:
             messagebox.showinfo("Error", "All fields must be filled out.")
             return
 
-        elif self.user_exists(email):
-            print("This user already exists!")
+        if self.user_exists(email):
             messagebox.showinfo("Error", "User already exists")
+            return
+
+        if not re.match(regex, password):
+            error_message = "Invalid password! It must contain:\n"
+            if not re.search(r"[a-z]", password):
+                error_message += "- At least one lowercase letter\n"
+            if not re.search(r"[A-Z]", password):
+                error_message += "- At least one uppercase letter\n"
+            if not re.search(r"\d", password):
+                error_message += "- At least one digit\n"
+            if not re.search(r"[^\w_]", password):
+                error_message += "- At least one special character (!@#$%^&* etc.)\n"
+            if len(password) < 10:
+                error_message += "- Minimum 10 characters\n"
+
+            messagebox.showinfo("Error", error_message)
             return
 
         hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
@@ -115,10 +133,10 @@ class User(ctk.CTkFrame):
             self.conn.cursor.execute("SELECT id FROM users WHERE email = %s", (email,))
             user = self.conn.cursor.fetchone()
             user_id = user[0]
+            self.conn.set_user_id(user_id)
 
             messagebox.showinfo("Success", "Registration successful!")
-            print("Registration successful!")
-            self.show_main_menu(user_id)
+            self.show_main_menu()
 
             self.last_name_entry.delete(0, tk.END)
             self.first_name_entry.delete(0, tk.END)
@@ -129,6 +147,7 @@ class User(ctk.CTkFrame):
             print(f"Error: {e}")
         finally:
             self.conn.close_db()
+
 
     def check_connection(self, email, password):
         """ Check credentials and move to the menu if valid """
@@ -174,7 +193,7 @@ class User(ctk.CTkFrame):
                 print(f"🔍 [User] user_id passed to Connect_db: {user_id}")
 
                 # Vérification email admin
-                if email == "shrek@mail.com":  
+                if email == "admin@mail.com":  
                     self.show_admin_menu(user_id)  # ✅ Passe l'ID utilisateur
                 else:
                     self.show_main_menu(user_id)  # ✅ Passe l'ID utilisateur

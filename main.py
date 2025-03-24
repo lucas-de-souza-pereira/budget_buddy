@@ -8,7 +8,7 @@ from models.transactions import TransactionManage
 
 
 import customtkinter as ctk
-
+import sys
 
 class App(ctk.CTk):
     def __init__(self):
@@ -19,6 +19,8 @@ class App(ctk.CTk):
         self.geometry(f"{self.width}x{self.height}")
 
         self.conn = Connect_db()
+        
+        self.protocol("WM_DELETE_WINDOW", self.onclosing)
 
         # Configurer la grille principale
         self.grid_columnconfigure(0, weight=1)
@@ -45,7 +47,7 @@ class App(ctk.CTk):
 
         frame.show()
 
-    def show_main_menu(self, user_id):
+    def show_main_menu(self):
         """ Passe au menu principal après connexion """
         self.main_menu_frame.select_account()
         self.main_menu_frame.load_user_data()
@@ -62,6 +64,10 @@ class App(ctk.CTk):
     def show_transaction_page(self):
         self.show_frame(self.transaction_frame)
         self.transaction_frame.select_account()
+        
+    def on_closing(self):
+        self.destroy()
+        sys.exit(0)
 
 
 if __name__ == "__main__":
