@@ -82,10 +82,7 @@ class TransactionManage(ctk.CTkFrame):
         self.current_mode = new_mode
         ctk.set_appearance_mode(new_mode)
 
-
         self.update_transaction_type()
-
-
 
     def update_transaction_type(self, *args):
         """ Met à jour l'affichage en fonction du type de transaction sélectionné """
@@ -140,17 +137,16 @@ class TransactionManage(ctk.CTkFrame):
         self.conn.close_db()
 
     def get_selected_account(self):
-        """ Retourne l'ID du compte sélectionné """
+        """ return account ID """
         selected_account_id = self.variable.get()
         if selected_account_id:
-            print(f"✅ Compte sélectionné : {selected_account_id}")
+            print(f"✅ accounr selected : {selected_account_id}")
             return selected_account_id
         else:
-            print("⚠️ Aucun compte sélectionné.")
             return None
 
     def effectuer_transaction(self):
-        """ Enregistre une transaction dans la base de données """
+        """ save a transaction in database """
         
         self.conn.connect_db()
         amount = self.montant_var.get()
@@ -191,7 +187,7 @@ class TransactionManage(ctk.CTkFrame):
 
 
 
-        # self.status_label.configure(text="Transaction enregistrée !", text_color="green")
+        self.status_label.configure(text="Transaction enregistrée !", text_color="green")
         
 
     def querry_depot_it(self,account_id, reference, description, amount, current_date, transaction_type):
@@ -324,7 +320,7 @@ class TransactionManage(ctk.CTkFrame):
 
 
     def afficher_transactions(self):
-        """ Affiche la liste des transactions """
+        """ display transaction list """
         self.conn.connect_db()
 
         account_id_list = []
@@ -339,13 +335,6 @@ class TransactionManage(ctk.CTkFrame):
                                 WHERE account_id IN ({placeholders})
                                 ORDER BY date DESC"""
 
-        placeholders = ",".join(["%S"] * len(account_id_list))
-
-        querry = f"""SELECT reference, description, montant, date, type, account_id 
-                                FROM transactions 
-                                WHERE account_id IN ({placeholders})
-                                ORDER BY date DESC"""
-        
 
         print(f"account_id_list = {account_id_list}")
 
@@ -366,9 +355,9 @@ class TransactionManage(ctk.CTkFrame):
         self.conn.close_db()
 
     def show(self):
-        """ Afficher la fenêtre des transactions """
+        """ display transaction window """
         self.grid(row=0, column=0, sticky="nsew")
 
     def hide(self):
-        """ Cacher la fenêtre des transactions """
+        """ hide transaction window """
         self.grid_remove()

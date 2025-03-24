@@ -10,17 +10,17 @@ class Main_menu(ctk.CTkFrame):
         super().__init__(master)
 
         self.current_mode = ctk.get_appearance_mode()
-        self.show_frame = show_frame  # Allows navigation between screens
+        self.show_frame = show_frame
         self.conn = conn
 
-        # 📌 Grid configuration
-        self.grid_columnconfigure(0, weight=1)  # Left column
-        self.grid_columnconfigure(1, weight=1)  # Right column
-        self.grid_rowconfigure(0, weight=1)  # Vertical spacing
+        # Grid configuration
+        self.grid_columnconfigure(0, weight=1)
+        self.grid_columnconfigure(1, weight=1)
+        self.grid_rowconfigure(0, weight=1)
 
-        # 🏠 User Information Section (on the left)
+        # User Information Section (on the left)
         self.user_info_frame = ctk.CTkFrame(self)
-        self.user_info_frame.grid(row=0, column=0, padx=20, pady=20, sticky="nsew")  # Placement
+        self.user_info_frame.grid(row=0, column=0, padx=20, pady=20, sticky="nsew")  # Positioning
 
         self.user_label = ctk.CTkLabel(self.user_info_frame, text="👤 User Information", font=("Arial", 16))
         self.user_label.pack(pady=10)
@@ -34,8 +34,7 @@ class Main_menu(ctk.CTkFrame):
         self.create_account_button = ctk.CTkButton(self.user_info_frame, text="Create Account", command=self.open_create_account_window)
         self.create_account_button.pack(pady=50)
 
-
-        # for radio buttons
+        # Radio buttons for accounts selection
         self.values = ["Account N° :"]
         self.radiobuttons_accounts = []
         self.variable = ctk.StringVar(value="")
@@ -45,10 +44,9 @@ class Main_menu(ctk.CTkFrame):
             self.radiobutton.pack(pady=5)
             self.radiobuttons_accounts.append(self.radiobutton)
 
-
-        # 💰 Bank Account Balance Section (on the right)
+        # Bank Account Balance Section (on the right)
         self.account_balance_frame = ctk.CTkFrame(self)
-        self.account_balance_frame.grid(row=0, column=1, padx=20, pady=20, sticky="nsew")  # Placement
+        self.account_balance_frame.grid(row=0, column=1, padx=20, pady=20, sticky="nsew")  # Positioning
 
         self.balance_label = ctk.CTkLabel(self.account_balance_frame, text="💰 Account Balance", font=("Arial", 16))
         self.balance_label.pack(pady=10)
@@ -56,33 +54,33 @@ class Main_menu(ctk.CTkFrame):
         self.balance_amount = ctk.CTkLabel(self.account_balance_frame, text="Total balance : ")
         self.balance_amount.pack()
 
-
-        # Frame pour le graphique
+        # Frame for graph
         self.graph_frame = ctk.CTkFrame(self.account_balance_frame)
         self.graph_frame.pack(padx=10, pady=10, fill="both", expand=True)
 
-        # Initialisation du graphique
+        # Initialize graph
         self.fig, self.ax = plt.subplots(figsize=(5, 3))
         self.canvas = FigureCanvasTkAgg(self.fig, master=self.graph_frame)
         self.canvas.draw()
         self.canvas.get_tk_widget().pack(fill="both", expand=True)
 
-        # Graphique de base
-        self.update_graph([], [], "monthly balance")
+        # Default graph
+        self.update_graph([], [], "Monthly balance")
 
-
-        self.research_button = ctk.CTkButton(self.account_balance_frame, text="Search", command=self.master.show_search_page)
+        # Buttons for navigating to different sections
+        self.research_button = ctk.CTkButton(self.account_balance_frame, text="Search", command=self.master.show_search_frame)
         self.research_button.pack(pady=10)
 
         self.transaction_button = ctk.CTkButton(self.account_balance_frame, text="Transaction", command=self.master.show_transaction_page)
         self.transaction_button.pack(pady=10)
 
-        # 🔄 Logout button at the bottom
+        # Logout button at the bottom
         self.logout_button = ctk.CTkButton(self, text="Logout", command=lambda: self.show_frame(master.login_frame))
         self.logout_button.grid(row=1, column=0, columnspan=2, padx=20, sticky="e")
 
+        # Theme toggle button
         self.theme_button = ctk.CTkButton(self, text="Change Theme", command=self.toggle_theme)
-        self.theme_button.grid(row=1, column=0, padx=20, pady=5, sticky="w" )
+        self.theme_button.grid(row=1, column=0, padx=20, pady=5, sticky="w")
 
     def toggle_theme(self):
         """ Toggle between light and dark theme """
@@ -96,7 +94,7 @@ class Main_menu(ctk.CTkFrame):
 
         try: 
             user_id = self.conn.get_user_id() 
-            print(f"🔍 [Main_menu] user_id retrieved: {user_id}")  # Debug
+            print(f"🔍 [Main_menu] user_id retrieved: {user_id}")  # Debugging line
 
             query = """SELECT last_name, first_name, email
                        FROM users
@@ -110,8 +108,6 @@ class Main_menu(ctk.CTkFrame):
             self.user_email.configure(text=f"Email : {user_connected[2]}")
 
             self.total_balance(user_id)
-
-
 
         except Exception as e:
             print("Error while loading user info:", e)
@@ -133,6 +129,7 @@ class Main_menu(ctk.CTkFrame):
         ctk.CTkButton(self.create_window, text="Create Account", command=self.create_account).grid(row=3, column=0, columnspan=2, pady=15)
 
     def account_exists(self, account_name, user_id):
+        """ Check if the account already exists """
         self.conn.cursor.execute("SELECT name FROM accounts WHERE name = %s AND user_id = %s", 
                                 (account_name, user_id))
         account = self.conn.cursor.fetchone()
@@ -173,12 +170,11 @@ class Main_menu(ctk.CTkFrame):
             self.conn.close_db()
 
     def select_account(self):
-        """ Function to select account on dashboard """
+        """ Select account to display on the dashboard """
         self.conn.connect_db()
 
         try: 
             user_id = self.conn.get_user_id() 
-            print(f"🔍 [Main_menu][select_account] user_id retrieved: {user_id}")  
 
             query = """SELECT id, name, balance
                        FROM accounts
@@ -188,13 +184,14 @@ class Main_menu(ctk.CTkFrame):
             self.conn.cursor.execute(query, (user_id,))
             data_accounts = self.conn.cursor.fetchall()
 
-            for radiobutton in self.radiobuttons_accounts[:]:  
+            for radiobutton in self.radiobuttons_accounts[:]:  # Remove old radiobuttons
                 radiobutton.destroy()
 
-            self.radiobuttons_accounts.clear() 
+            self.radiobuttons_accounts.clear()  # Clear list
 
-            self.variable.set("") 
+            self.variable.set("")  # Reset the selected account
 
+            # Add a new radio button for each account
             for i, account in enumerate(data_accounts):
                 account_text = f"Account N° : {account[0]} - {account[1]} - Balance : {account[2]}€"
                 radiobutton = ctk.CTkRadioButton(
@@ -205,7 +202,7 @@ class Main_menu(ctk.CTkFrame):
                     command=self.on_account_selected
                     )
                 radiobutton.pack(pady=3, padx=10, anchor="w", fill="x")
-                self.radiobuttons_accounts.append(radiobutton) 
+                self.radiobuttons_accounts.append(radiobutton)
 
             self.select_account_graphic(data_accounts)
 
@@ -215,8 +212,7 @@ class Main_menu(ctk.CTkFrame):
             self.conn.close_db()
 
     def on_account_selected(self):
-        """ Appelé automatiquement quand un compte est sélectionné via radio """
-
+        """ Automatically called when an account is selected via radio button """
         selected_id = self.get_selected_account()
 
         if selected_id is None:
@@ -229,8 +225,8 @@ class Main_menu(ctk.CTkFrame):
 
         self.graphical_data(selected_id)
 
-    def graphical_data(self,selected_id):
-
+    def graphical_data(self, selected_id):
+        """ Get transaction data to update the graph """
         self.conn.connect_db()
 
         query = """SELECT MONTHNAME(date), SUM(montant)
@@ -243,40 +239,39 @@ class Main_menu(ctk.CTkFrame):
         data_graphic = self.conn.cursor.fetchall()
 
         print(data_graphic)
-        self.update_graph(data_graphic[0][0],float(data_graphic[0][1]))
+        self.update_graph(data_graphic[0][0], float(data_graphic[0][1]))
 
         self.conn.close_db()
 
     def update_graph(self, x_data, y_data, title="Monthly balance"):
-        """ Met à jour dynamiquement le graphique matplotlib """
-        self.ax.clear() 
+        """ Dynamically update the matplotlib graph """
+        self.ax.clear()  # Clear previous graph
         self.ax.bar(x_data, y_data)
         self.ax.set_title(title)
         self.canvas.draw()
 
-    def total_balance(self,user_id):
-
-            query = """SELECT SUM(balance)
-                       FROM accounts
-                       WHERE user_id = %s
+    def total_balance(self, user_id):
+        """ Get the total balance of all accounts for the user """
+        query = """SELECT SUM(balance)
+                   FROM accounts
+                   WHERE user_id = %s
             """
 
-            self.conn.cursor.execute(query, (user_id,))
-            total_balance = self.conn.cursor.fetchone()
+        self.conn.cursor.execute(query, (user_id,))
+        total_balance = self.conn.cursor.fetchone()
 
-            self.balance_amount.configure(text=f"Total balance : {float(total_balance[0])} €")
+        self.balance_amount.configure(text=f"Total balance : {float(total_balance[0])} €")
 
     def get_selected_account(self):
         """ Get the selected account value """
         selected_account = self.variable.get()
-
 
         if selected_account:
             print(f"Selected account : {selected_account}")
             return selected_account
 
     def show(self):
-        """ Print main menu """
+        """ Show main menu """
         self.grid(row=0, column=0, sticky="nsew")
 
     def hide(self):

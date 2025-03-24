@@ -88,6 +88,7 @@ class User(ctk.CTkFrame):
         return user is not None 
 
     def create_user(self):
+        """create a user by filling in all the required fields"""
         self.conn.connect_db()
 
         last_name = self.last_name_entry.get()
@@ -96,6 +97,7 @@ class User(ctk.CTkFrame):
         password = self.password_entry_create.get()
 
         regex = r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\w])[A-Za-z\d\W]{10,}$"
+        # Allows you to create a password with the required parameters
 
         if not last_name or not first_name or not email or not password:
             messagebox.showinfo("Error", "All fields must be filled out.")
@@ -210,8 +212,6 @@ class User(ctk.CTkFrame):
             print("Error during login:", e)
         finally:
             self.conn.close_db()
-
-
 
     def show(self):
         """ Show the login screen """

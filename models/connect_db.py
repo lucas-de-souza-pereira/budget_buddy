@@ -10,7 +10,7 @@ class Connect_db():
 
 
     def connect_db(self):
-
+        """connect to budget_buddy ddb, hiding password"""
         self.mydb = mysql.connector.connect(
             host = "localhost",
             user = "root",
@@ -24,6 +24,7 @@ class Connect_db():
             print(db_info)
 
     def close_db (self):
+        """close the database"""
         self.cursor.close()
         self.mydb.close()
 
