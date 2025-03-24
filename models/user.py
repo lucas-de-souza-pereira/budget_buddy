@@ -194,11 +194,11 @@ class User(ctk.CTkFrame):
 
                 print(f"🔍 [User] user_id passed to Connect_db: {user_id}")
 
-                # Vérification email admin
+                # check admin mail
                 if email == "admin@mail.com":  
-                    self.show_admin_menu(user_id)  # ✅ Passe l'ID utilisateur
+                    self.show_admin_menu(user_id)
                 else:
-                    self.show_main_menu()  # ✅ Passe l'ID utilisateur
+                    self.show_main_menu()
 
 
                 self.email_entry_conn.delete(0, tk.END)

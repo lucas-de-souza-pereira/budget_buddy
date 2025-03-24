@@ -29,7 +29,7 @@ class Connect_db():
         self.mydb.close()
 
     def set_user_id(self,user_id):
-        """define user_id"""
+        """set user_id"""
         self.user_id = user_id
         print(f"🔍 [Connect_db] user_id saved : {self.user_id}")
 
