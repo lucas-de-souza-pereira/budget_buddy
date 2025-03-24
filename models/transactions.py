@@ -67,14 +67,12 @@ class TransactionManage(ctk.CTkFrame):
         except ValueError:
             self.status_label.configure(text="Error: Invalid amount", text_color="red")
             return
-    
-        
+           
         user_id = 1
         reference = f"TR-{datetime.now().strftime('%Y%m%d%H%M%S')}"
         sql = "INSERT INTO transactions (user_id, reference, description, amount, date, type) VALUES (%s, %s, %s, %s, %s, %s)"
         values = (user_id, reference, description, amount, current_date, transaction_type)
-        
-        
+             
         print("effect3")
         
         self.conn.cursor.execute(sql, values)
