@@ -1,6 +1,7 @@
 from models.connect_db import Connect_db
 from models.filter import TransactionApp
 from models.mainmenu import Main_menu
+from models.adminmenu import Admin_menu
 from models.user import User
 from models.transactions import TransactionManage
 
@@ -25,13 +26,15 @@ class App(ctk.CTk):
         self.grid_rowconfigure(0, weight=1)
 
         # Création des écrans
-        self.login_frame = User(self, self.show_main_menu,self.conn)
+        self.login_frame = User(self, self.show_main_menu, self.show_admin_menu, self.conn)
         self.main_menu_frame = Main_menu(self, self.show_frame,self.conn)
+        self.admin_menu_frame = Admin_menu(self, self.show_frame,self.conn)
         self.transaction_frame = TransactionManage(self,self.show_frame, self.conn)
         self.search_frame = TransactionApp(self, self.show_frame, self.conn)
 
         # Afficher uniquement la connexion au début
         self.main_menu_frame.hide()
+        self.admin_menu_frame.hide()
         self.transaction_frame.hide()
         self.search_frame.hide()
         self.login_frame.show()
@@ -40,6 +43,7 @@ class App(ctk.CTk):
         """ Afficher uniquement le frame sélectionné """
         self.login_frame.hide()
         self.main_menu_frame.hide()
+        self.admin_menu_frame.hide()
         self.transaction_frame.hide()
         self.search_frame.hide()
 
@@ -50,6 +54,14 @@ class App(ctk.CTk):
         self.main_menu_frame.select_account()
         self.main_menu_frame.load_user_data()
         self.show_frame(self.main_menu_frame)
+
+        
+    def show_admin_menu(self, email):
+        """ Passe au menu admin après connexion """
+        self.admin_menu_frame.select_account()
+        self.admin_menu_frame.load_user_data()
+        self.show_frame(self.admin_menu_frame)
+
 
     def show_transaction_page(self):
         self.show_frame(self.transaction_frame)

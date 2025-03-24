@@ -331,6 +331,13 @@ class TransactionManage(ctk.CTkFrame):
 
         for account_id in self.data_accounts:
             account_id_list.append(account_id[0])
+            
+        placeholders = ','.join(['%s'] * len(account_id_list))
+
+        querry = f"""SELECT reference, description, montant, date, type, account_id 
+                                FROM transactions 
+                                WHERE account_id IN ({placeholders})
+                                ORDER BY date DESC"""
 
         placeholders = ",".join(["%S"] * len(account_id_list))
 

@@ -95,21 +95,37 @@ class TransactionApp(ctk.CTkFrame):
                 -------------------------------------------------------
                 """
                 self.result_box.insert("end", formatted_transaction)
+                formatted_transaction = f"""
+                Montant : {transaction[4]} €
+                Description : {transaction[3]}
+                Type : {transaction[6]}
+                Date : {transaction[5]}
+                Categorie : {transaction[7]}
+                
+                -------------------------------------------------------
+                """
+                self.result_box.insert("end", formatted_transaction)
         else:
             self.result_box.insert("end", "Aucune transaction trouvée.\n")
 
     def show_all_transactions(self):
         self.fetch_transactions("SELECT * FROM transactions WHERE account_id = %s", (self.account_id,))
+        self.fetch_transactions("SELECT * FROM transactions WHERE account_id = %s", (self.account_id,))
 
     def filter_by_type(self):
         transaction_type = self.type_var.get()
+        self.fetch_transactions("SELECT * FROM transactions WHERE account_id = %s AND type = %s", (self.account_id, transaction_type))
         self.fetch_transactions("SELECT * FROM transactions WHERE account_id = %s AND type = %s", (self.account_id, transaction_type))
 
     def filter_by_category(self):
         category = self.category_var.get()
         self.fetch_transactions("SELECT * FROM transactions WHERE account_id = %s AND category = %s", (self.account_id, category))
+        self.fetch_transactions("SELECT * FROM transactions WHERE account_id = %s AND category = %s", (self.account_id, category))
 
     def filter_by_date_range(self):
+        start_date = self.date_start.get_date()
+        end_date = self.date_end.get_date()
+        self.fetch_transactions("SELECT * FROM transactions WHERE account_id = %s AND date BETWEEN %s AND %s", (self.account_id, start_date, end_date))
         start_date = self.date_start.get_date()
         end_date = self.date_end.get_date()
         self.fetch_transactions("SELECT * FROM transactions WHERE account_id = %s AND date BETWEEN %s AND %s", (self.account_id, start_date, end_date))
