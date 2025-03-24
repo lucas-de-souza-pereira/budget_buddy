@@ -71,7 +71,7 @@ class Main_menu(ctk.CTkFrame):
         self.update_graph([], [], "monthly balance")
 
 
-        self.research_button = ctk.CTkButton(self.account_balance_frame, text="Search")
+        self.research_button = ctk.CTkButton(self.account_balance_frame, text="Search", command=self.master.show_search_page)
         self.research_button.pack(pady=10)
 
         self.transaction_button = ctk.CTkButton(self.account_balance_frame, text="Transaction", command=self.master.show_transaction_page)
@@ -209,7 +209,6 @@ class Main_menu(ctk.CTkFrame):
 
             self.select_account_graphic(data_accounts)
 
-
         except Exception as e:
             print("Error while loading account data:", e)
         finally:
@@ -229,7 +228,6 @@ class Main_menu(ctk.CTkFrame):
             return
 
         self.graphical_data(selected_id)
-
 
     def graphical_data(self,selected_id):
 

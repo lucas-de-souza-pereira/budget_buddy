@@ -1,5 +1,4 @@
 from models.connect_db import Connect_db
-from models.historical import Historical
 from models.filter import TransactionApp
 from models.mainmenu import Main_menu
 from models.user import User
@@ -57,11 +56,10 @@ class App(ctk.CTk):
         self.transaction_frame.select_account()
 
     def on_closing(self):
-        # print("Fermeture propre...")
         self.destroy()
         sys.exit(0)
 
-    def show_search_frame(self):
+    def show_search_page(self):
         self.show_frame(self.search_frame)   
 
 if __name__ == "__main__":

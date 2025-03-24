@@ -9,6 +9,7 @@ class TransactionManage(ctk.CTkFrame):
     def __init__(self, master, show_frame, conn):
         super().__init__(master)
 
+        self.current_mode = ctk.get_appearance_mode()
         self.show_frame = show_frame  
         self.conn = conn
 
@@ -71,6 +72,16 @@ class TransactionManage(ctk.CTkFrame):
 
         self.back_button = ctk.CTkButton(self.frame_bottom, text="← Back to Menu", command=self.master.show_main_menu)
         self.back_button.pack(pady=5)
+
+        self.theme_button = ctk.CTkButton(self, text="Change Theme", command=self.toggle_theme)
+        self.theme_button.grid(pady=5, sticky="w" )
+
+    def toggle_theme(self):
+        """ Toggle between light and dark theme """
+        new_mode = "Dark" if self.current_mode == "Light" else "Light"
+        self.current_mode = new_mode
+        ctk.set_appearance_mode(new_mode)
+
 
         self.update_transaction_type()
 
@@ -316,14 +327,18 @@ class TransactionManage(ctk.CTkFrame):
         """ Affiche la liste des transactions """
         self.conn.connect_db()
 
-        querry = """SELECT reference, description, montant, date, type, account_id 
-                                FROM transactions 
-                                WHERE account_id IN (%s, %s, %s)
-                                ORDER BY date DESC"""
-        
         account_id_list = []
+
         for account_id in self.data_accounts:
             account_id_list.append(account_id[0])
+
+        placeholders = ",".join(["%S"] * len(account_id_list))
+
+        querry = f"""SELECT reference, description, montant, date, type, account_id 
+                                FROM transactions 
+                                WHERE account_id IN ({placeholders})
+                                ORDER BY date DESC"""
+        
 
         print(f"account_id_list = {account_id_list}")
 

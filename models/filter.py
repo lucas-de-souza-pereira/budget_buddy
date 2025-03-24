@@ -1,125 +1,126 @@
+
 import customtkinter as ctk
-from datetime import datetime
+from tkcalendar import DateEntry
 
 class TransactionApp(ctk.CTkFrame):
-    def __init__(self, master, conn, show_frame):
+    def __init__(self, master, show_frame, conn):
         super().__init__(master)
 
-        self.current_mode = ctk.get_appearance_mode()
-        self.show_frame = show_frame  # Pour naviguer entre les écrans
+        self.show_frame = show_frame  
         self.conn = conn
 
-        # Variables liées aux widgets
-        self.type_var = ctk.StringVar(value="deposit")
-        self.category_var = ctk.StringVar(value="loisir")
-        self.date_start = ctk.StringVar()
-        self.date_end = ctk.StringVar()
+        self.current_mode = ctk.get_appearance_mode()
 
-        self.grid_columnconfigure(0, weight=1)
-        self.grid_columnconfigure(1, weight=1)
-        self.grid_rowconfigure(0, weight=1)
+        # self.grid_columnconfigure((0, 1), weight=1)
+        # self.grid_rowconfigure(0, weight=4)
+        # self.grid_rowconfigure(1, weight=1)
 
-        # Cadre principal
+        # Block 1: Filters
         self.filter_frame = ctk.CTkFrame(self)
-        self.filter_frame.grid(row=0, column=0, padx=20, pady=20, sticky="nsew")
+        self.filter_frame.grid(row=0, column=0, padx=2, pady=2, sticky="ew")
 
-        # Filtres de type de transaction
-        ctk.CTkLabel(self.filter_frame, text="Type :").grid(row=0, column=0, sticky="w")
+        ctk.CTkLabel(self.filter_frame, text="Filtres").grid(row=0, column=0, columnspan=2, pady=10)
+
+        # Type
+        ctk.CTkLabel(self.filter_frame, text="Type :").grid(row=1, column=0, sticky="w", padx=2, pady=2)
+        self.type_var = ctk.StringVar(value="deposit")
         self.type_box = ctk.CTkComboBox(self.filter_frame, values=["deposit", "withdrawal", "transfer"], variable=self.type_var)
-        self.type_box.grid(row=0, column=1, padx=10, pady=5)
-        
-        # Catégorie de transaction
-        ctk.CTkLabel(self.filter_frame, text="Catégorie :").grid(row=1, column=0, sticky="w")
-        self.category_entry = ctk.CTkEntry(self.filter_frame, textvariable=self.category_var)
-        self.category_entry.grid(row=1, column=1, padx=10, pady=5)
+        self.type_box.grid(row=1, column=1, padx=2, pady=2)
+        ctk.CTkButton(self.filter_frame, text="Filtrer", command=self.filter_by_type).grid(row=1, column=2, padx=2, pady=2)
 
-        # Date de début et fin
-        ctk.CTkLabel(self.filter_frame, text="Date début :").grid(row=2, column=0, sticky="w")
-        self.date_start_entry = ctk.CTkEntry(self.filter_frame, textvariable=self.date_start)
-        self.date_start_entry.grid(row=2, column=1, padx=10, pady=5)
-        self.date_start.bind("<KeyRelease>", lambda e: self.format_date_entry(e, self.date_start))
+        # Category
+        ctk.CTkLabel(self.filter_frame, text="Catégorie :").grid(row=2, column=0, sticky="w", padx=2, pady=2)
+        self.category_var = ctk.StringVar(value="loisir")
+        self.category_entry = ctk.CTkEntry(self.filter_frame, textvariable=self.category_var, width=120)
+        self.category_entry.grid(row=2, column=1, padx=2, pady=2)
+        ctk.CTkButton(self.filter_frame, text="Filtrer", command=self.filter_by_category).grid(row=2, column=2, padx=2, pady=2)
 
-        ctk.CTkLabel(self.filter_frame, text="Date fin :").grid(row=3, column=0, sticky="w")
-        self.date_end_entry = ctk.CTkEntry(self.filter_frame, textvariable=self.date_end)
-        self.date_end_entry.grid(row=3, column=1, padx=10, pady=5)
-        self.date_end.bind("<KeyRelease>", lambda e: self.format_date_entry(e, self.date_end))
+        # Dates
+        ctk.CTkLabel(self.filter_frame, text="Date début :").grid(row=3, column=0, sticky="w", padx=2, pady=2)
+        self.date_start = DateEntry(self.filter_frame, width=12, background='darkblue', foreground='white', borderwidth=2)
+        self.date_start.grid(row=3, column=1, padx=2, pady=2)
 
-        # Bouton pour appliquer le filtre
-        ctk.CTkButton(self.filter_frame, text="Filtrer", command=self.filter_transactions).grid(row=4, column=0, columnspan=2, pady=10)
+        ctk.CTkLabel(self.filter_frame, text="Date fin :").grid(row=4, column=0, sticky="w", padx=2, pady=2)
+        self.date_end = DateEntry(self.filter_frame, width=12, background='darkblue', foreground='white', borderwidth=2)
+        self.date_end.grid(row=4, column=1, padx=2, pady=2)
 
-        # Affichage des résultats
-        self.result_box = ctk.CTkTextbox(self.filter_frame, height=150, width=450)
-        self.result_box.grid(row=5, column=0, columnspan=2, padx=10, pady=10, sticky="nsew")
+        ctk.CTkButton(self.filter_frame, text="Filtrer par Date", command=self.filter_by_date_range).grid(row=5, column=0, columnspan=3, padx=2, pady=2)
 
-        # Bouton pour rafraîchir les transactions
-        ctk.CTkButton(self.filter_frame, text="Afficher toutes les transactions", command=self.show_all_transactions).grid(row=6, column=0, columnspan=2, pady=10)
+        # Block 2: Sort by Amount
+        self.sort_frame = ctk.CTkFrame(self)
+        self.sort_frame.grid(row=1, column=0, padx=2, pady=2, sticky="ew")
 
-        # Bouton pour changer de thème
-        self.theme_button = ctk.CTkButton(self, text="Changer le thème", command=self.toggle_theme)
-        self.theme_button.grid(row=0, column=2, padx=10, pady=20, sticky="ne")
+        ctk.CTkLabel(self.sort_frame, text="Trier par Montant :").grid(row=0, column=0, sticky="w", padx=2, pady=2)
+        ctk.CTkButton(self.sort_frame, text="↑", width=30, command=lambda: self.sort_transactions("ASC")).grid(row=0, column=1, padx=2, pady=2)
+        ctk.CTkButton(self.sort_frame, text="↓", width=30, command=lambda: self.sort_transactions("DESC")).grid(row=0, column=2, padx=2, pady=2)
 
-    def toggle_theme(self):
-        """ Basculer entre le mode clair et foncé """
-        new_mode = "Dark" if self.current_mode == "Light" else "Light"
-        self.current_mode = new_mode
-        ctk.set_appearance_mode(new_mode)
+        # Block 3: Display Results
+        self.display_frame = ctk.CTkFrame(self)
+        self.display_frame.grid(row=2, column=0, padx=2, pady=2, sticky="nsew")
 
-    def filter_transactions(self):
-        """ Appliquer les filtres et afficher les résultats """
-        type_ = self.type_var.get()
-        category = self.category_var.get()
-        start_date = self.date_start.get()
-        end_date = self.date_end.get()
+        self.result_box = ctk.CTkTextbox(self.display_frame, height=150, width=450, wrap="none")
+        self.result_box.pack(padx=2, pady=2)
 
-        query = "SELECT * FROM transactions WHERE type = %s AND category = %s"
-        params = (type_, category)
+        # Block 4: Action Buttons (Optional)
+        self.frame_bottom = ctk.CTkFrame(self)
+        self.frame_bottom.grid(row=3, column=0, padx=2, pady=2, sticky="nsew")
 
-        if start_date and end_date:
-            start_date = self.format_date_for_sql(start_date)
-            end_date = self.format_date_for_sql(end_date)
-            query += " AND date BETWEEN %s AND %s"
-            params += (start_date, end_date)
+        self.button_frame = ctk.CTkFrame(self.frame_bottom)
+        self.button_frame.pack(pady=10, fill="x")
 
-        self.fetch_transactions(query, params)
+
+
+
+        self.transaction_listbox = ctk.CTkTextbox(self.frame_bottom, height=100, width=500)
+        self.transaction_listbox.pack(pady=10, padx=10, fill="both", expand=True)
+
+        self.back_button = ctk.CTkButton(self.frame_bottom, text="← Back to Menu", command=self.master.show_main_menu)
+        self.back_button.pack(pady=5)    
 
     def fetch_transactions(self, query, params=()):
-        """ Exécuter la requête et afficher les résultats """
-        self.conn.cursor.execute(query, params)
-        transactions = self.conn.cursor.fetchall()
+        """ Exécute une requête et affiche les résultats """
+        self.cursor.execute(query, params)
+        transactions = self.cursor.fetchall()
 
         self.result_box.delete("0.0", "end")
         if transactions:
             for transaction in transactions:
-                self.result_box.insert("end", f"{transaction}\n")
+                formatted_transaction = f"""
+                Montant : {transaction[4]} €
+                Description : {transaction[3]}
+                Type : {transaction[6]}
+                Date : {transaction[5]}
+                Categorie : {transaction[7]}
+                
+                -------------------------------------------------------
+                """
+                self.result_box.insert("end", formatted_transaction)
         else:
             self.result_box.insert("end", "Aucune transaction trouvée.\n")
 
     def show_all_transactions(self):
-        """ Afficher toutes les transactions """
-        query = "SELECT * FROM transactions"
-        self.fetch_transactions(query)
+        self.fetch_transactions("SELECT * FROM transactions WHERE account_id = %s", (self.account_id,))
 
-    def format_date_entry(self, event, entry: ctk.CTkEntry):
-        """ Reformate la date en YYYY/MM/DD au fur et à mesure de la saisie """
-        raw_date = entry.get().replace("/", "")
+    def filter_by_type(self):
+        transaction_type = self.type_var.get()
+        self.fetch_transactions("SELECT * FROM transactions WHERE account_id = %s AND type = %s", (self.account_id, transaction_type))
 
-        if len(raw_date) > 8:
-            raw_date = raw_date[:8]
+    def filter_by_category(self):
+        category = self.category_var.get()
+        self.fetch_transactions("SELECT * FROM transactions WHERE account_id = %s AND category = %s", (self.account_id, category))
 
-        if raw_date.isdigit():
-            formatted_date = raw_date
-            if len(raw_date) > 4:
-                formatted_date = raw_date[:4] + "/" + raw_date[4:]
-            if len(raw_date) > 6:
-                formatted_date = raw_date[:4] + "/" + raw_date[4:6] + "/" + raw_date[6:]
+    def filter_by_date_range(self):
+        start_date = self.date_start.get_date()
+        end_date = self.date_end.get_date()
+        self.fetch_transactions("SELECT * FROM transactions WHERE account_id = %s AND date BETWEEN %s AND %s", (self.account_id, start_date, end_date))
 
-            entry.delete(0, "end")
-            entry.insert(0, formatted_date)
-
+    def sort_transactions(self, order):
+        self.fetch_transactions(f"SELECT * FROM transactions WHERE account_id = %s ORDER BY montant {order}", (self.account_id,))
+    
     def show(self):
-        """ Afficher l'écran """
+        """ Afficher la fenêtre des recherches """
         self.grid(row=0, column=0, sticky="nsew")
 
     def hide(self):
-        """ Masquer l'écran """
+        """ Cacher la fenêtre des recherches """
         self.grid_remove()
