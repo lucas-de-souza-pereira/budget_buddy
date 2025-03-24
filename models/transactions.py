@@ -316,14 +316,16 @@ class TransactionManage(ctk.CTkFrame):
         """ Affiche la liste des transactions """
         self.conn.connect_db()
 
-        querry = """SELECT reference, description, montant, date, type, account_id 
-                                FROM transactions 
-                                WHERE account_id IN (%s, %s, %s)
-                                ORDER BY date DESC"""
-        
         account_id_list = []
         for account_id in self.data_accounts:
             account_id_list.append(account_id[0])
+            
+        placeholders = ','.join(['%s'] * len(account_id_list))
+
+        querry = f"""SELECT reference, description, montant, date, type, account_id 
+                                FROM transactions 
+                                WHERE account_id IN ({placeholders})
+                                ORDER BY date DESC"""
 
         print(f"account_id_list = {account_id_list}")
 
