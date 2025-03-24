@@ -19,8 +19,8 @@ class App(ctk.CTk):
         self.geometry(f"{self.width}x{self.height}")
 
         self.conn = Connect_db()
-        
-        self.protocol("WM_DELETE_WINDOW", self.onclosing)
+
+        self.protocol("WM_DELETE_WINDOW", self.on_closing)
 
         # Configurer la grille principale
         self.grid_columnconfigure(0, weight=1)
@@ -64,8 +64,9 @@ class App(ctk.CTk):
     def show_transaction_page(self):
         self.show_frame(self.transaction_frame)
         self.transaction_frame.select_account()
-        
+
     def on_closing(self):
+        # print("Fermeture propre...")
         self.destroy()
         sys.exit(0)
 

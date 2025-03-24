@@ -196,7 +196,7 @@ class User(ctk.CTkFrame):
                 if email == "admin@mail.com":  
                     self.show_admin_menu(user_id)  # ✅ Passe l'ID utilisateur
                 else:
-                    self.show_main_menu(user_id)  # ✅ Passe l'ID utilisateur
+                    self.show_main_menu()  # ✅ Passe l'ID utilisateur
 
 
                 self.email_entry_conn.delete(0, tk.END)
